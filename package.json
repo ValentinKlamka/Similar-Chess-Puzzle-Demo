@@ -1,0 +1,7 @@
+{
+  "dependencies": {
+    "chess.js": "^1.2.0",
+    "heap-js": "^2.6.0",
+    "nouislider": "^15.8.1"
+  }
+}

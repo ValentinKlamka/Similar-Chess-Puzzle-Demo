@@ -1,0 +1,12 @@
+<svg width="24" height="24" viewBox="0 0 24 24"
+     fill="none" xmlns="http://www.w3.org/2000/svg" stroke="currentColor" stroke-width="1.5">
+  <!-- Checkerboard (4 squares) -->
+  <rect x="2" y="2" width="6" height="6" fill="currentColor"/>
+  <rect x="8" y="2" width="6" height="6" fill="none" stroke="currentColor"/>
+  <rect x="2" y="8" width="6" height="6" fill="none" stroke="currentColor"/>
+  <rect x="8" y="8" width="6" height="6" fill="currentColor"/>
+
+  <!-- Magnifying glass -->
+  <circle cx="16" cy="16" r="4" stroke="currentColor" fill="none"/>
+  <line x1="19" y1="19" x2="22" y2="22" stroke="currentColor" stroke-linecap="round"/>
+</svg>
