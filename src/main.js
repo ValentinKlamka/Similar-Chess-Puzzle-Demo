@@ -591,6 +591,7 @@ function resetHighlights() {
 }
 
 async function initializeSession() {
+  console.log('Initializing session...');
   try {
     const response = await fetch('https://api.valentinklamka.de/api/assign_session_id', {
       method: 'GET',
