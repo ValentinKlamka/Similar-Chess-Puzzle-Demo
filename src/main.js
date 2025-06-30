@@ -740,6 +740,7 @@ function displaySolvedPuzzles(puzzles) {
 
 // Function to trigger the search for similar puzzles
 async function triggerSearchSimilar() {
+  console.log('Triggering search for similar puzzles...');
   if (!chessPuzzle) {
     alert('No active puzzle to search similar puzzles.');
     return;
@@ -754,6 +755,7 @@ async function triggerSearchSimilar() {
       method: 'GET',
       credentials: 'include',
       onmessage(event) { 
+      console.log('Received event:', event.data);
       const [score, raw_puzzle] = JSON.parse(event.data); // Parse the streamed (score, puzzle) pair
       const puzzle = new ChessPuzzle(mapPuzzleKeys(raw_puzzle)); // Initialize as ChessPuzzle
       puzzles.length = 0; // Clear the existing puzzles array
