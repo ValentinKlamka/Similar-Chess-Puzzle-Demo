@@ -360,7 +360,7 @@ async function correctMoveIndicator(target) {
   square.css('position', 'relative');
 
   // Load the SVG
-  const svg = await loadSVG('../assets/svg/correct.svg');
+  const svg = await loadSVG('./assets/svg/correct.svg');
 
   // Create a container for the SVG
   const svgContainer = document.createElement('div');
@@ -383,7 +383,7 @@ async function wrongMoveIndicator(target){
   square.css('position', 'relative');
 
   // Load the SVG
-  const svg = await loadSVG('../assets/svg/wrong.svg');
+  const svg = await loadSVG('./assets/svg/wrong.svg');
 
   // Create a container for the SVG
   const svgContainer = document.createElement('div');
@@ -456,10 +456,10 @@ async function checkPuzzleSolved() {
   let mark = document.createElement('div');
   
   if (chessPuzzle.currentMoveIndex >= chessPuzzle.movesArray.length) {
-    const svg = await loadSVG('../assets/svg/correct.svg');
+    const svg = await loadSVG('./assets/svg/correct.svg');
     mark.innerHTML = svg; // Use the loaded SVG for the correct mark
   } else {
-    const svg = await loadSVG('../assets/svg/wrong.svg');
+    const svg = await loadSVG('./assets/svg/wrong.svg');
     mark.innerHTML = svg; // Use the loaded SVG for the wrong mark
   }
 
