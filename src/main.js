@@ -1,4 +1,6 @@
 import { createSettingsPanel, createSidebar, createNavigationButtons,addSettingsPanelToggle} from './ui.js';
+import { fetchEventSource } from '@microsoft/fetch-event-source';
+
 // NOTE: this example uses the chess.js library:
 // https://github.com/jhlywa/chess.js
 window.triggerSearchSimilar = triggerSearchSimilar;
@@ -748,9 +750,10 @@ async function triggerSearchSimilar() {
   try {
     const referenceMoves = encodeURIComponent(chessPuzzle.moves_ton); // Ensure it's properly encoded
     console.log(`Searching for similar puzzles to reference moves: ${referenceMoves}`);
-    const eventSource = new EventSource(`https://api.valentinklamka.de/api/similar_puzzles?reference_moves=${referenceMoves}`);
-
-    eventSource.onmessage = (event) => {
+    fetchEventSource('https://api.valentinklamka.de/api/similar_puzzles?reference_moves=' + referenceMoves, {
+      method: 'GET',
+      credentials: 'include',
+      onmessage(event) { 
       const [score, raw_puzzle] = JSON.parse(event.data); // Parse the streamed (score, puzzle) pair
       const puzzle = new ChessPuzzle(mapPuzzleKeys(raw_puzzle)); // Initialize as ChessPuzzle
       puzzles.length = 0; // Clear the existing puzzles array
@@ -768,7 +771,9 @@ async function triggerSearchSimilar() {
       }
 
       eventSource.close(); // Close the EventSource after receiving the first message
-    };
+      }
+    });
+    
   } catch (error) {
     console.error('Error triggering search for similar puzzles:', error);
     alert('Error searching similar puzzles.');
