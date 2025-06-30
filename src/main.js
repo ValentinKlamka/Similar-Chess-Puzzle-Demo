@@ -746,6 +746,7 @@ async function triggerSearchSimilar() {
 
   try {
     const referenceMoves = encodeURIComponent(chessPuzzle.moves_ton); // Ensure it's properly encoded
+    console.log(`Searching for similar puzzles to reference moves: ${referenceMoves}`);
     const eventSource = new EventSource(`https://api.valentinklamka.de/api/similar_puzzles?reference_moves=${referenceMoves}`);
 
     eventSource.onmessage = (event) => {
