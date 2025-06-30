@@ -1,5 +1,5 @@
 import { createSettingsPanel, createSidebar, createNavigationButtons,addSettingsPanelToggle} from './ui.js';
-import { fetchEventSource } from '@microsoft/fetch-event-source';
+import { fetchEventSource } from 'https://cdn.skypack.dev/@microsoft/fetch-event-source';
 
 // NOTE: this example uses the chess.js library:
 // https://github.com/jhlywa/chess.js
@@ -773,7 +773,7 @@ async function triggerSearchSimilar() {
       eventSource.close(); // Close the EventSource after receiving the first message
       }
     });
-    
+
   } catch (error) {
     console.error('Error triggering search for similar puzzles:', error);
     alert('Error searching similar puzzles.');
