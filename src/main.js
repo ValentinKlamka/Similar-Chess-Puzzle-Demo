@@ -592,7 +592,7 @@ function resetHighlights() {
 
 async function initializeSession() {
   try {
-    const response = await fetch('http://127.0.0.1:3000/api/assign_session_id', {
+    const response = await fetch('https://api.valentinklamka.de/api/assign_session_id', {
       method: 'GET',
       credentials: 'include', // Ensure cookies are included
     });
@@ -610,7 +610,7 @@ async function fetchPuzzles(searchParams) {
   try {
     // Construct the query string from the searchParams object
     const queryString = new URLSearchParams(searchParams).toString();
-    const response = await fetch(`http://127.0.0.1:3000/api/puzzles?${queryString}`, {
+    const response = await fetch(`https://api.valentinklamka.de/api/puzzles?${queryString}`, {
       method: 'GET',
       credentials: 'include', // Include cookies in the request
     });
@@ -642,7 +642,7 @@ async function fetchPuzzles(searchParams) {
 // Function to save a solved puzzle
 async function saveSolvedPuzzle(puzzle) {
   try {
-    await fetch('http://127.0.0.1:3000/api/solved_puzzles', {
+    await fetch('https://api.valentinklamka.de/api/solved_puzzles', {
       method: 'POST',
       credentials: 'include',
       headers: { 'Content-Type': 'application/json' },
@@ -656,7 +656,7 @@ async function saveSolvedPuzzle(puzzle) {
 // Function to fetch solved puzzles
 async function fetchSolvedPuzzles() {
   try {
-    const response = await fetch('http://127.0.0.1:3000/api/solved_puzzles', {
+    const response = await fetch('https://api.valentinklamka.de/api/solved_puzzles', {
       method: 'GET',
       credentials: 'include',
     });
@@ -746,7 +746,7 @@ async function triggerSearchSimilar() {
 
   try {
     const referenceMoves = encodeURIComponent(chessPuzzle.moves_ton); // Ensure it's properly encoded
-    const eventSource = new EventSource(`http://127.0.0.1:3000/api/similar_puzzles?reference_moves=${referenceMoves}`);
+    const eventSource = new EventSource(`https://api.valentinklamka.de/api/similar_puzzles?reference_moves=${referenceMoves}`);
 
     eventSource.onmessage = (event) => {
       const [score, raw_puzzle] = JSON.parse(event.data); // Parse the streamed (score, puzzle) pair
@@ -778,7 +778,7 @@ async function triggerSearchSimilar() {
 // Function to load the next puzzle from the heap
 async function loadNextPuzzleFromHeap() {
   try {
-    const response = await fetch(`http://127.0.0.1:3000/api/pop_max_puzzle`, {
+    const response = await fetch(`https://api.valentinklamka.de/api/pop_max_puzzle`, {
       method:'GET',
       credentials: 'include',
     });
