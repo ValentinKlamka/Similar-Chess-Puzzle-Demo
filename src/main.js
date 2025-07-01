@@ -309,7 +309,7 @@ function showPromotionMenu(target, callback) {
 
   // Add promotion options with piece images
   pieces.forEach((piece) => {
-    const $option = $(`<div><img src="./tree/main/img/chesspieces/wikipedia/${color}${piece}.png" alt="${piece}" /></div>`);
+    const $option = $(`<div><img src="/Similar-Chess-Puzzle-Demo/img/chesspieces/wikipedia/${color}${piece}.png" alt="${piece}" /></div>`);
     $option.css({
       display: 'flex',
       alignItems: 'center',
