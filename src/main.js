@@ -309,7 +309,7 @@ function showPromotionMenu(target, callback) {
 
   // Add promotion options with piece images
   pieces.forEach((piece) => {
-    const $option = $(`<div><img src="./img/chesspieces/wikipedia/${color}${piece}.png" alt="${piece}" /></div>`);
+    const $option = $(`<div><img src="./tree/main/img/chesspieces/wikipedia/${color}${piece}.png" alt="${piece}" /></div>`);
     $option.css({
       display: 'flex',
       alignItems: 'center',
@@ -486,20 +486,19 @@ async function checkPuzzleSolved() {
   if (!isPuzzleFromHistory) { //if the puzzle is not from history
     saveSolvedPuzzle(puzzle).then(() => {
       fetchSolvedPuzzles(); // Update the history immediately after saving
-      setTimeout(() => {
-        if (isSearchingSimilar) {
-          loadNextPuzzleFromHeap(); // Load the next puzzle from the heap
-        } else {
-          loadPuzzle(currentPuzzleIndex + 1); // Load the next puzzle from the puzzles array
-        }
-      }, 200);
+
+      if (isSearchingSimilar) {
+        loadNextPuzzleFromHeap(); // Load the next puzzle from the heap
+      } else {
+        loadPuzzle(currentPuzzleIndex + 1); // Load the next puzzle from the puzzles array
+      }
+
     });
   } else { // If the puzzle is from history
-    setTimeout(() => {
-      puzzles[currentPuzzleIndex].reinitialize();
-      loadPuzzle(currentPuzzleIndex); // Reload the current puzzle
+    
+    puzzles[currentPuzzleIndex].reinitialize();
+    loadPuzzle(currentPuzzleIndex); // Reload the current puzzle
 
-    }, 200);
   }
 
   // Reset the flag
