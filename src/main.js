@@ -273,7 +273,7 @@ function showPromotionMenu(target, callback) {
   const color = rank === EIGTH_RANK ? 'w' : 'b'; // White promotes on the top rank, Black on the bottom rank
 
   // Determine the order of pieces based on the rank
-  const pieces = isTopRank ? ['Q', 'N', 'R', 'B'] : ['B', 'R', 'N', 'Q'];
+  const pieces = isTopRank ? ['q', 'n', 'r', 'b'] : ['b', 'r', 'n', 'q'];
 
   // Calculate the size of a chessboard square
   const squareSize = $('#board .square-55d63').outerWidth();
@@ -309,7 +309,7 @@ function showPromotionMenu(target, callback) {
 
   // Add promotion options with piece images
   pieces.forEach((piece) => {
-    const $option = $(`<div><img src="/Similar-Chess-Puzzle-Demo/img/chesspieces/wikipedia/${color}${piece}.png" alt="${piece}" /></div>`);
+    const $option = $(`<div><img src="/Similar-Chess-Puzzle-Demo/img/chesspieces/wikipedia/${color}${toUpperCase(piece)}.png" alt="${piece}" /></div>`);
     $option.css({
       display: 'flex',
       alignItems: 'center',
@@ -862,7 +862,6 @@ window.addEventListener('load', () => {
   fetchPuzzles(searchParams); // Fetch puzzles with the initial search parameters
 });
 window.addEventListener('load', fetchSolvedPuzzles);
-// Add this to your main JavaScript file
 
 
 
