@@ -7,9 +7,13 @@ window.triggerSearchSimilar = triggerSearchSimilar;
 let chessPuzzle = null;
 // Expose the function globally
 
-let pingInterval = setInterval(() => {
-  navigator.sendBeacon("/api/keepalive");
-}, 10000); // every 10s
+setInterval(() => {
+  fetch("https://api.valentinklamka.de/api/keepalive", {
+    method: "POST",
+    credentials: "include",
+    keepalive: true
+  });
+}, 10000);
 
 
 
