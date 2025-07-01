@@ -1,10 +1,10 @@
-import { createSettingsPanel, createSidebar, createNavigationButtons,addSettingsPanelToggle} from './ui.js';
+import { createSettingsPanel, createSidebar, createNavigationButtons, addSettingsPanelToggle } from './ui.js';
 import { fetchEventSource } from 'https://cdn.skypack.dev/@microsoft/fetch-event-source';
 
 // NOTE: this example uses the chess.js library:
 // https://github.com/jhlywa/chess.js
 window.triggerSearchSimilar = triggerSearchSimilar;
-let chessPuzzle = null; 
+let chessPuzzle = null;
 // Expose the function globally
 
 let pingInterval = setInterval(() => {
@@ -53,12 +53,12 @@ class ChessPuzzle {
     this.lastDevicePixelRatio = window.devicePixelRatio; // Track zoom level
   }
   initializeBoard() {
-    
+
     this.board = Chessboard('board', config); // Initialize the chessboard
   }
-    
-  
-    
+
+
+
 
   reinitialize() {
     this.game = new Chess(this.initialFen);
@@ -92,13 +92,13 @@ class ChessPuzzle {
 }
 
 
-function onDragStart (source, piece, position, orientation) { 
+function onDragStart(source, piece, position, orientation) {
   // do not pick up pieces if the game is over
   if (chessPuzzle.game.game_over()) return false
 
   // only pick up pieces for the side to move
   if ((chessPuzzle.game.turn() === 'w' && piece.search(/^b/) !== -1) ||
-      (chessPuzzle.game.turn() === 'b' && piece.search(/^w/) !== -1)) {
+    (chessPuzzle.game.turn() === 'b' && piece.search(/^w/) !== -1)) {
     return false
   }
   return true; // Allow the piece to be dragged
@@ -171,13 +171,13 @@ function onDrop(source, target) {
       if (chessPuzzle.game.in_checkmate() || moveStringWithPromotion === expectedMove) { //old moveString and expectedMove
         handleUserMove(move); // Finalize the move
       } else {
-        if (isPuzzleFromHistory){
+        if (isPuzzleFromHistory) {
           chessPuzzle.game.undo(); // Undo the wrong move
           chessPuzzle.board.position(chessPuzzle.game.fen(), false);
         }
-        else{
-        wrongMoveIndicator(target); // Show wrong move indicator
-        checkPuzzleSolved(); //abort the puzzle if the move is wrong
+        else {
+          wrongMoveIndicator(target); // Show wrong move indicator
+          checkPuzzleSolved(); //abort the puzzle if the move is wrong
         }
         return 'snapback'; // Revert the move
       }
@@ -197,14 +197,14 @@ function onDrop(source, target) {
   if (chessPuzzle.game.in_checkmate() || moveString === expectedMove) { //old moveString and expectedMove
     handleUserMove(move); // Finalize the move
   } else {
-    
-    if (isPuzzleFromHistory){
+
+    if (isPuzzleFromHistory) {
       chessPuzzle.game.undo(); // Undo the wrong move
       chessPuzzle.board.position(chessPuzzle.game.fen(), false);
     }
-    else{
-    wrongMoveIndicator(target); // Show wrong move indicator
-    checkPuzzleSolved(); //abort the puzzle if the move is wrong
+    else {
+      wrongMoveIndicator(target); // Show wrong move indicator
+      checkPuzzleSolved(); //abort the puzzle if the move is wrong
     }
     return 'snapback'; // Revert the move
   }
@@ -214,7 +214,7 @@ function handleUserMove(move) {
   const moveString = move.from + move.to + (move.promotion || '');
   const expectedMove = chessPuzzle.movesArray[chessPuzzle.currentMoveIndex];
 
-  if (chessPuzzle.game.in_checkmate()||moveString === expectedMove) { //new moveString and expectedMove
+  if (chessPuzzle.game.in_checkmate() || moveString === expectedMove) { //new moveString and expectedMove
     chessPuzzle.exploredMoves.push(moveString); // Add move to explored moves
 
     chessPuzzle.board.position(chessPuzzle.game.fen(), false);
@@ -224,8 +224,8 @@ function handleUserMove(move) {
     //small delay to allow the board to update
     setTimeout(() => {
       executeComputerMove();
-    },50);
-     // Execute the computer's move
+    }, 50);
+    // Execute the computer's move
   } else {
     chessPuzzle.game.undo(); // Undo the wrong move
     chessPuzzle.board.position(chessPuzzle.game.fen(), false);
@@ -265,7 +265,7 @@ function showPromotionMenu(target, callback) {
   const isFlipped = boardOrientation === 'black';
 
   // Determine the promotion color based on orientation and rank
-const isTopRank = isFlipped ? rank === FIRST_RANK : rank === EIGTH_RANK; // Check if the rank is the top rank for the current orientation
+  const isTopRank = isFlipped ? rank === FIRST_RANK : rank === EIGTH_RANK; // Check if the rank is the top rank for the current orientation
   const color = rank === EIGTH_RANK ? 'w' : 'b'; // White promotes on the top rank, Black on the bottom rank
 
   // Determine the order of pieces based on the rank
@@ -289,14 +289,15 @@ const isTopRank = isFlipped ? rank === FIRST_RANK : rank === EIGTH_RANK; // Chec
   let left;
   // Calculate menu position
   const boardOffset = $('#board').offset();
-  if(color==='w') {
+  if (color === 'w') {
     left = isTopRank
-    ? boardOffset.left + (file.charCodeAt(0) - 'a'.charCodeAt(0)) * squareSize
-    : boardOffset.left + (7 - (file.charCodeAt(0) - 'a'.charCodeAt(0))) * squareSize
+      ? boardOffset.left + (file.charCodeAt(0) - 'a'.charCodeAt(0)) * squareSize
+      : boardOffset.left + (7 - (file.charCodeAt(0) - 'a'.charCodeAt(0))) * squareSize
   }
-  else{left = isTopRank
-    ? boardOffset.left + (7 - (file.charCodeAt(0) - 'a'.charCodeAt(0))) * squareSize
-    : boardOffset.left + (file.charCodeAt(0) - 'a'.charCodeAt(0)) * squareSize
+  else {
+    left = isTopRank
+      ? boardOffset.left + (7 - (file.charCodeAt(0) - 'a'.charCodeAt(0))) * squareSize
+      : boardOffset.left + (file.charCodeAt(0) - 'a'.charCodeAt(0)) * squareSize
   }
   const top = boardOffset.top + (isTopRank ? 0 : 4 * squareSize);
 
@@ -351,7 +352,7 @@ const isTopRank = isFlipped ? rank === FIRST_RANK : rank === EIGTH_RANK; // Chec
 
 // update the board position after the piece snap
 // for castling, en passant, pawn promotion
-function onSnapEnd () {
+function onSnapEnd() {
   chessPuzzle.board.position(chessPuzzle.game.fen())
 }
 
@@ -378,7 +379,7 @@ async function correctMoveIndicator(target) {
   square.append(svgContainer);
 }
 
-async function wrongMoveIndicator(target){
+async function wrongMoveIndicator(target) {
   // Select the square element
   const square = $(`#board .square-${target}`);
   // Ensure the square has relative positioning
@@ -456,7 +457,7 @@ async function loadSVG(filePath) {
 // Function to check if the puzzle is solved
 async function checkPuzzleSolved() {
   let mark = document.createElement('div');
-  
+
   if (chessPuzzle.currentMoveIndex >= chessPuzzle.movesArray.length) {
     const svg = await loadSVG('./assets/svg/correct.svg');
     mark.innerHTML = svg; // Use the loaded SVG for the correct mark
@@ -487,14 +488,14 @@ async function checkPuzzleSolved() {
         } else {
           loadPuzzle(currentPuzzleIndex + 1); // Load the next puzzle from the puzzles array
         }
-      },200);
+      }, 200);
     });
   } else { // If the puzzle is from history
     setTimeout(() => {
       puzzles[currentPuzzleIndex].reinitialize();
       loadPuzzle(currentPuzzleIndex); // Reload the current puzzle
 
-    },200);
+    }, 200);
   }
 
   // Reset the flag
@@ -504,7 +505,7 @@ async function checkPuzzleSolved() {
 function updatePuzzleIdText() {
   const puzzleIdElement = document.getElementById('puzzle-id');
   if (chessPuzzle && chessPuzzle.puzzle_id) {
-    if (chessPuzzle.reference_puzzle!== null && chessPuzzle.score !== null) {
+    if (chessPuzzle.reference_puzzle !== null && chessPuzzle.score !== null) {
 
       puzzleIdElement.textContent = `Puzzle ${chessPuzzle.puzzle_id} ${chessPuzzle.score.toFixed(2)} similarity to puzzle ${chessPuzzle.reference_puzzle}`;
     } else {
@@ -579,8 +580,8 @@ function moveBackward() {
     if (chessPuzzle.currentMoveIndex === 0) {
       resetHighlights()
     }
-    else  {
-      const moveString = chessPuzzle.movesArray[chessPuzzle.currentMoveIndex-1];
+    else {
+      const moveString = chessPuzzle.movesArray[chessPuzzle.currentMoveIndex - 1];
       const from = moveString.slice(0, 2);
       const to = moveString.slice(2, 4);
       highlightLastMove(from, to);
@@ -751,30 +752,37 @@ async function triggerSearchSimilar() {
   try {
     const referenceMoves = encodeURIComponent(chessPuzzle.moves_ton); // Ensure it's properly encoded
     console.log(`Searching for similar puzzles to reference moves: ${referenceMoves}`);
+    const controller = new AbortController();
+
     fetchEventSource('https://api.valentinklamka.de/api/similar_puzzles?reference_moves=' + referenceMoves, {
       method: 'GET',
       credentials: 'include',
-      onmessage(event) { 
-      console.log('Received event:', event.data);
-      const [score, raw_puzzle] = JSON.parse(event.data); // Parse the streamed (score, puzzle) pair
-      const puzzle = new ChessPuzzle(mapPuzzleKeys(raw_puzzle)); // Initialize as ChessPuzzle
-      puzzles.length = 0; // Clear the existing puzzles array
-      puzzles.push(puzzle); // Add the new puzzle to the array
-      currentPuzzleIndex = 0; // Reset the current puzzle index
-      isSearchingSimilar = true; // Set the flag to indicate similar search mode
+      signal: controller.signal,
+      onmessage(event) {
+        console.log('Received event:', event.data);
 
-      if (puzzles.length > 0) {
-        loadPuzzle(0); // Load the first puzzle
-        chessPuzzle.score = score; // Store the score in the chessPuzzle instance
-        chessPuzzle.reference_puzzle = reference_puzzle; // Store the reference puzzle ID in the instance
-        updatePuzzleIdText();
-      } else {
-        alert('No puzzles found');
-      }
+        const [score, raw_puzzle] = JSON.parse(event.data);
+        const puzzle = new ChessPuzzle(mapPuzzleKeys(raw_puzzle));
+        puzzles.length = 0;
+        puzzles.push(puzzle);
+        currentPuzzleIndex = 0;
+        isSearchingSimilar = true;
 
-      eventSource.close(); // Close the EventSource after receiving the first message
+        if (puzzles.length > 0) {
+          loadPuzzle(0);
+          chessPuzzle.score = score;
+          chessPuzzle.reference_puzzle = reference_puzzle;
+          updatePuzzleIdText();
+        } else {
+          alert('No puzzles found');
+        }
+
+        // ✅ Stop listening to the event source after the first puzzle
+        controller.abort();
       }
     });
+
+
 
   } catch (error) {
     console.error('Error triggering search for similar puzzles:', error);
@@ -788,7 +796,7 @@ async function triggerSearchSimilar() {
 async function loadNextPuzzleFromHeap() {
   try {
     const response = await fetch(`https://api.valentinklamka.de/api/pop_max_puzzle`, {
-      method:'GET',
+      method: 'GET',
       credentials: 'include',
     });
 
@@ -796,9 +804,9 @@ async function loadNextPuzzleFromHeap() {
       throw new Error('Failed to fetch the next puzzle from the heap.');
     }
     const reference_puzzle = chessPuzzle.reference_puzzle; // Store the reference puzzle in the instance
-    
+
     const [score, raw_puzzle] = await response.json();
-    const puzzle= new ChessPuzzle(mapPuzzleKeys(raw_puzzle)); // Initialize as ChessPuzzle
+    const puzzle = new ChessPuzzle(mapPuzzleKeys(raw_puzzle)); // Initialize as ChessPuzzle
     if (puzzle) {
       puzzles.push(puzzle); // Add the new puzzle to the puzzles array
       currentPuzzleIndex = puzzles.length - 1; // Set the current puzzle index to the last puzzle
@@ -858,10 +866,10 @@ window.addEventListener('load', fetchSolvedPuzzles);
 
 var config = {
   draggable: true,
-  position:"start",
+  position: "start",
   onDragStart: onDragStart,
   onDrop: onDrop,
-  onSnapEnd: onSnapEnd,  
+  onSnapEnd: onSnapEnd,
 }
 // Global initialization
 chessPuzzle = new ChessPuzzle({
