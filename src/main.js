@@ -597,7 +597,6 @@ function resetHighlights() {
 }
 
 async function initializeSession() {
-  console.log('Initializing session...');
   try {
     const response = await fetch('https://api.valentinklamka.de/api/assign_session_id', {
       method: 'GET',
@@ -744,7 +743,6 @@ function displaySolvedPuzzles(puzzles) {
 
 // Function to trigger the search for similar puzzles
 async function triggerSearchSimilar() {
-  console.log('Triggering search for similar puzzles...');
   if (!chessPuzzle) {
     alert('No active puzzle to search similar puzzles.');
     return;
@@ -754,7 +752,6 @@ async function triggerSearchSimilar() {
 
   try {
     const referenceMoves = encodeURIComponent(chessPuzzle.moves_ton); // Ensure it's properly encoded
-    console.log(`Searching for similar puzzles to reference moves: ${referenceMoves}`);
     const controller = new AbortController();
 
     fetchEventSource('https://api.valentinklamka.de/api/similar_puzzles?reference_moves=' + referenceMoves, {
@@ -762,7 +759,6 @@ async function triggerSearchSimilar() {
       credentials: 'include',
       signal: controller.signal,
       onmessage(event) {
-        console.log('Received event:', event.data);
 
         const [score, raw_puzzle] = JSON.parse(event.data);
         const puzzle = new ChessPuzzle(mapPuzzleKeys(raw_puzzle));
@@ -857,9 +853,9 @@ document.getElementById('board').addEventListener('contextmenu', (event) => {
 
 
 // Fetch solved puzzles on page load
-window.addEventListener('load', initializeSession);
-window.addEventListener('load', () => {
-  fetchPuzzles(searchParams); // Fetch puzzles with the initial search parameters
+window.addEventListener('load', async () => {
+  await initializeSession();
+  fetchPuzzles(searchParams);
 });
 window.addEventListener('load', fetchSolvedPuzzles);
 
