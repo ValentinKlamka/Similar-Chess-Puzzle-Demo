@@ -273,7 +273,7 @@ function showPromotionMenu(target, callback) {
   const color = rank === EIGTH_RANK ? 'w' : 'b'; // White promotes on the top rank, Black on the bottom rank
 
   // Determine the order of pieces based on the rank
-  const pieces = isTopRank ? ['q', 'n', 'r', 'b'] : ['b', 'r', 'n', 'q'];
+  const pieces = isTopRank ? ['Q', 'N', 'R', 'B'] : ['B', 'R', 'N', 'Q'];
 
   // Calculate the size of a chessboard square
   const squareSize = $('#board .square-55d63').outerWidth();
