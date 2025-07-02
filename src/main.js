@@ -54,7 +54,6 @@ class ChessPuzzle {
     this.reference_puzzle = puzzle.reference_puzzle || null;
     this.score = puzzle.score || null;
     this.mark = puzzle.mark || null;
-    this.lastDevicePixelRatio = window.devicePixelRatio; // Track zoom level
   }
   initializeBoard() {
 
@@ -754,7 +753,7 @@ async function triggerSearchSimilar() {
     const referenceMoves = encodeURIComponent(chessPuzzle.moves_ton); // Ensure it's properly encoded
     const controller = new AbortController();
 
-    fetchEventSource('https://api.valentinklamka.de/api/similar_puzzles?reference_moves=' + referenceMoves, {
+    fetchEventSource('https://api.valentinklamka.de/api/similar_puzzles?reference_moves=' + referenceMoves+"&reference_puzzle="+reference_puzzle, {
       method: 'GET',
       credentials: 'include',
       signal: controller.signal,
