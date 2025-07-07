@@ -299,7 +299,7 @@ export function createSidebar() {
   }
 }
 
-export function createNavigationButtons(moveBackward, moveForward) {
+export function createNavigationButtons(moveBackward, moveForward, triggersearchSimilar, showHint) {
     // Add buttons below the chessboard
     const navigationContainer = document.createElement('div');
     navigationContainer.style.marginTop = '10px';
@@ -310,38 +310,65 @@ export function createNavigationButtons(moveBackward, moveForward) {
     const backwardButton = document.createElement('button');
     backwardButton.textContent = '<';
     backwardButton.style.padding = '10px';
-    backwardButton.addEventListener('click', moveBackward);
-
+    backwardButton.addEventListener('click', () => {
+        moveBackward();
+        // No need to call updateHintButtonState here since it will be called in moveBackward
+    });
 
     const searchSimilarButton = document.createElement('button');
     searchSimilarButton.id = 'search-similar-button';
     searchSimilarButton.style.padding = '10px';
     searchSimilarButton.style.backgroundColor = '#4CAF50';
-  
     searchSimilarButton.style.borderRadius = '5px';
-    
-    //on hover, show a tooltip with the text "Search Similar Puzzles"
     searchSimilarButton.title = 'Search Similar Puzzles';
     searchSimilarButton.addEventListener('click', () => {
-      window.triggerSearchSimilar();
+        triggersearchSimilar();
     });
     const svgIcon = document.createElement('img');
     svgIcon.src = 'assets/svg/similarity_search.svg';
     svgIcon.alt = 'Search Similar Icon Icon';
     svgIcon.style.width = '24px'; // Adjust size as needed
     svgIcon.style.height = '24px';
-
     searchSimilarButton.appendChild(svgIcon);
+
+    // Add a hint button
+    const hintButton = document.createElement('button');
+    hintButton.id = 'hint-button';
+    hintButton.style.padding = '10px';
+    hintButton.style.borderRadius = '5px';
+    hintButton.title = 'Show Hint';
+    hintButton.addEventListener('click', () => {
+        if (!hintButton.disabled) {
+            showHint();
+        }
+    });
+    const hintIcon = document.createElement('img');
+    hintIcon.src = 'assets/svg/hint.svg';
+    hintIcon.alt = 'Hint Icon';
+    hintIcon.style.width = '24px'; // Adjust size as needed
+    hintIcon.style.height = '24px';
+    hintButton.appendChild(hintIcon);
 
     const forwardButton = document.createElement('button');
     forwardButton.textContent = '>';
     forwardButton.style.padding = '10px';
-    forwardButton.addEventListener('click', moveForward);
+    forwardButton.addEventListener('click', () => {
+        moveForward();
+        // No need to call updateHintButtonState here since it will be called in moveForward
+    });
 
     navigationContainer.appendChild(backwardButton);
     navigationContainer.appendChild(searchSimilarButton);
+    navigationContainer.appendChild(hintButton);
     navigationContainer.appendChild(forwardButton);
     document.getElementById('board').parentNode.appendChild(navigationContainer);
+    
+    // Store the hint button reference in the chessPuzzle instance
+    if (window.chessPuzzle) {
+        window.chessPuzzle.setHintButton(hintButton);
+    }
+    
+    return hintButton; // Return the hint button for reference
 }
 
 
@@ -380,4 +407,117 @@ export function addSettingsPanelToggle() {
   });
 
   document.body.appendChild(toggleButton);
+}
+
+// Function to draw an arrow between two squares
+export function drawArrow(from, to, color = '#3e8ef7', orientation) {
+  console.log(`Drawing arrow from ${from} to ${to} with orientation ${orientation}`);
+  
+  // Remove any existing arrows first
+  $('.hint-arrow').remove();
+  
+  // Get positions of the squares
+  const $boardContainer = $('#board');
+  const boardOffset = $boardContainer.offset();
+  const squareSize = $('.square-55d63').width();
+  
+  // Calculate center points of the squares
+  const fromFile = from.charCodeAt(0) - 'a'.charCodeAt(0);
+  const fromRank = 8 - parseInt(from[1]);
+  const toFile = to.charCodeAt(0) - 'a'.charCodeAt(0);
+  const toRank = 8 - parseInt(to[1]);
+  
+  // Adjust for board orientation
+  let fromX, fromY, toX, toY;
+  
+  if (orientation === 'white') {
+    fromX = boardOffset.left + (fromFile + 0.5) * squareSize;
+    fromY = boardOffset.top + (fromRank + 0.5) * squareSize;
+    toX = boardOffset.left + (toFile + 0.5) * squareSize;
+    toY = boardOffset.top + (toRank + 0.5) * squareSize;
+  } else {
+    fromX = boardOffset.left + (7 - fromFile + 0.5) * squareSize;
+    fromY = boardOffset.top + (7 - fromRank + 0.5) * squareSize;
+    toX = boardOffset.left + (7 - toFile + 0.5) * squareSize;
+    toY = boardOffset.top + (7 - toRank + 0.5) * squareSize;
+  }
+  
+  // First create SVG container with all properties, but don't attach to DOM yet
+  const svgContainer = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+  svgContainer.setAttribute('class', 'hint-arrow');
+  svgContainer.style.position = 'absolute';
+  svgContainer.style.top = boardOffset.top + 'px';
+  svgContainer.style.left = boardOffset.left + 'px';
+  svgContainer.style.width = (8 * squareSize) + 'px';
+  svgContainer.style.height = (8 * squareSize) + 'px';
+  svgContainer.style.pointerEvents = 'none';
+  svgContainer.style.zIndex = '1000';
+  
+  // Add a unique ID to prevent marker conflicts
+  const arrowheadId = 'arrowhead-' + Date.now();
+  
+  // Adjust the start and end points to avoid covering the pieces
+  // Calculate vector direction and normalize it
+  const dx = toX - fromX;
+  const dy = toY - fromY;
+  const distance = Math.sqrt(dx * dx + dy * dy);
+  
+  // Normalize the direction vector
+  const dirX = dx / distance;
+  const dirY = dy / distance;
+  
+  // Use a fixed offset based on square size rather than a percentage of distance
+  const fixedOffset = squareSize * 0.3; // Fixed distance from center (30% of square size)
+  
+  // Apply offset in the direction of the arrow
+  const startX = fromX + dirX * fixedOffset - boardOffset.left;
+  const startY = fromY + dirY * fixedOffset - boardOffset.top;
+  const endX = toX - dirX * fixedOffset - boardOffset.left;
+  const endY = toY - dirY * fixedOffset - boardOffset.top;
+  
+  // Create marker definition first
+  const defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
+  const marker = document.createElementNS('http://www.w3.org/2000/svg', 'marker');
+  marker.setAttribute('id', arrowheadId);
+  marker.setAttribute('markerWidth', '4');  // Smaller
+  marker.setAttribute('markerHeight', '3'); // Smaller
+  marker.setAttribute('refX', '0.5');       // Better positioned
+  marker.setAttribute('refY', '1.5');       // Better positioned
+  marker.setAttribute('orient', 'auto');
+  
+  const polygon = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
+  polygon.setAttribute('points', '0 0, 4 1.5, 0 3'); // Smaller triangle
+  polygon.setAttribute('fill', color);
+  
+  // Create the arrow line
+  const arrow = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+  arrow.setAttribute('x1', startX);
+  arrow.setAttribute('y1', startY);
+  arrow.setAttribute('x2', endX);
+  arrow.setAttribute('y2', endY);
+  arrow.setAttribute('stroke', color);
+  arrow.setAttribute('stroke-width', squareSize / 10); // Thinner line
+  arrow.setAttribute('marker-end', `url(#${arrowheadId})`);
+  
+  // Assemble all the SVG elements
+  marker.appendChild(polygon);
+  defs.appendChild(marker);
+  svgContainer.appendChild(defs);
+  svgContainer.appendChild(arrow);
+
+  // set opacity and pointer events
+  svgContainer.style.opacity = '0.8'; // Slightly transparent
+  svgContainer.style.pointerEvents = 'none'; // Prevent interaction with the arrow
+  
+  // Now that the SVG is fully assembled, add it to the document body
+  document.body.appendChild(svgContainer);
+  
+  console.log(`Arrow drawn from ${from} to ${to} with color ${color}`);
+  
+  // Auto-remove the arrow after a few seconds
+  setTimeout(() => {
+    $('.hint-arrow').fadeOut(500, function() {
+      $(this).remove();
+    });
+  }, 3000);
 }

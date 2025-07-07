@@ -1,4 +1,4 @@
-import { createSettingsPanel, createSidebar, createNavigationButtons, addSettingsPanelToggle } from './ui.js';
+import { createSettingsPanel, createSidebar, createNavigationButtons, addSettingsPanelToggle, drawArrow } from './ui.js';
 import { fetchEventSource } from 'https://cdn.skypack.dev/@microsoft/fetch-event-source';
 
 // NOTE: this example uses the chess.js library:
@@ -55,13 +55,33 @@ class ChessPuzzle {
     this.score = puzzle.score || null;
     this.mark = puzzle.mark || null;
   }
-  initializeBoard() {
 
+  initializeBoard() {
     this.board = Chessboard('board', config); // Initialize the chessboard
+    this.updateHintButtonState(); // Update hint button state after initializing
   }
 
 
+  updateHintButtonState() {
+    console.log(`Updating hint button state: currentMoveIndex=${this.currentMoveIndex}, exploredMoves.length=${this.exploredMoves.length}`);
+    const hintButton = document.getElementById('hint-button');
 
+    const shouldDisable = this.exploredMoves.length !== this.currentMoveIndex;
+    hintButton.disabled = shouldDisable;
+
+    const hintIcon = hintButton.querySelector('img');
+    if (hintIcon) {
+      if (shouldDisable) {
+        hintIcon.classList.add('hint-disabled');
+        console.log('Hint button is disabled');
+      } else {
+        hintIcon.classList.remove('hint-disabled');
+      }
+    }
+
+    hintButton.style.cursor = shouldDisable ? 'not-allowed' : 'pointer';
+
+  }
 
   reinitialize() {
     this.game = new Chess(this.initialFen);
@@ -69,11 +89,13 @@ class ChessPuzzle {
     this.currentMoveIndex = 0;
     this.board.position(this.game.fen(), false);
     this.currentMoveIndex = 0;
+    this.updateHintButtonState(); // Update hint button state
   }
 
   resetBoard() {
     resetBoardToExploredState(this.game, this.initialFen, this.exploredMoves);
     this.board.position(this.game.fen(), false);
+    this.updateHintButtonState(); // Update hint button state
   }
   setMetadata({ mark }) {
     this.mark = mark;
@@ -130,6 +152,7 @@ function executeComputerMove() {
     highlightLastMove(from, to); // Highlight the move
     chessPuzzle.board.position(chessPuzzle.game.fen(), false);
     chessPuzzle.currentMoveIndex++;
+    chessPuzzle.updateHintButtonState(); // Update the hint button state
   } else {
     // If all moves are completed, check if the puzzle is solved
     checkPuzzleSolved();
@@ -219,11 +242,12 @@ function handleUserMove(move) {
 
   if (chessPuzzle.game.in_checkmate() || moveString === expectedMove) { //new moveString and expectedMove
     chessPuzzle.exploredMoves.push(moveString); // Add move to explored moves
-
     chessPuzzle.board.position(chessPuzzle.game.fen(), false);
     highlightLastMove(move.from, move.to); // Highlight the move
     correctMoveIndicator(move.to);
     chessPuzzle.currentMoveIndex++;
+    chessPuzzle.updateHintButtonState(); // Add this line
+
     //small delay to allow the board to update
     setTimeout(() => {
       executeComputerMove();
@@ -351,6 +375,30 @@ function showPromotionMenu(target, callback) {
 
   // Append the menu to the body
   $('body').append($menu);
+}
+
+function showHint() {
+  // First remove any existing hint arrows
+  $('.hint-arrow').remove();
+
+  // Only show hint if we're at the latest explored position
+  if (chessPuzzle.exploredMoves.length !== chessPuzzle.currentMoveIndex) {
+    console.log('Cannot show hint - not at latest explored position');
+    return;
+  }
+
+  if (chessPuzzle.currentMoveIndex < chessPuzzle.movesArray.length) {
+    const moveString = chessPuzzle.movesArray[chessPuzzle.currentMoveIndex];
+    const from = moveString.slice(0, 2);
+    const to = moveString.slice(2, 4);
+    const orientation = chessPuzzle.board.orientation();
+
+    console.log(`Showing hint from ${from} to ${to} with orientation ${orientation}`);
+    // Draw an arrow from source to target square
+    drawArrow(from, to, '#3e8ef7', orientation); // Blue arrow for hints
+  } else {
+    alert('Puzzle solved already.');
+  }
 }
 
 // update the board position after the piece snap
@@ -570,6 +618,7 @@ function moveForward() {
     chessPuzzle.board.position(chessPuzzle.game.fen(), false);
     highlightLastMove(from, to);
     chessPuzzle.currentMoveIndex++;
+    chessPuzzle.updateHintButtonState(); // Update hint button state
   }
 }
 
@@ -588,6 +637,7 @@ function moveBackward() {
       const to = moveString.slice(2, 4);
       highlightLastMove(from, to);
     }
+    chessPuzzle.updateHintButtonState(); // Update hint button state
   }
 }
 function resetHighlights() {
@@ -826,7 +876,7 @@ createSettingsPanel(searchParams, fetchPuzzles);
 addSettingsPanelToggle();
 createSidebar();
 
-createNavigationButtons(moveBackward, moveForward);
+createNavigationButtons(moveBackward, moveForward, triggerSearchSimilar, showHint);
 
 
 

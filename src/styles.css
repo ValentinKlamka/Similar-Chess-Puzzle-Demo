@@ -98,6 +98,11 @@ body {
   position: relative;
 }
 
+.hint-disabled {
+  opacity: 0.4;
+  filter: grayscale(100%);
+}
+
 /* ---------- MEDIA QUERIES (ORGANIZED BY SPECIFICITY) ---------- */
 
 /* 1. GENERAL WIDTH-BASED QUERIES */
