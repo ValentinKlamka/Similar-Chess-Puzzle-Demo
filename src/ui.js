@@ -411,7 +411,6 @@ export function addSettingsPanelToggle() {
 
 // Function to draw an arrow between two squares
 export function drawArrow(from, to, color = '#3e8ef7', orientation) {
-  console.log(`Drawing arrow from ${from} to ${to} with orientation ${orientation}`);
   
   // Remove any existing arrows first
   $('.hint-arrow').remove();
@@ -512,7 +511,6 @@ export function drawArrow(from, to, color = '#3e8ef7', orientation) {
   // Now that the SVG is fully assembled, add it to the document body
   document.body.appendChild(svgContainer);
   
-  console.log(`Arrow drawn from ${from} to ${to} with color ${color}`);
   
   // Auto-remove the arrow after a few seconds
   setTimeout(() => {

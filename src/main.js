@@ -63,7 +63,6 @@ class ChessPuzzle {
 
 
   updateHintButtonState() {
-    console.log(`Updating hint button state: currentMoveIndex=${this.currentMoveIndex}, exploredMoves.length=${this.exploredMoves.length}`);
     const hintButton = document.getElementById('hint-button');
 
     const shouldDisable = this.exploredMoves.length !== this.currentMoveIndex;
@@ -73,7 +72,6 @@ class ChessPuzzle {
     if (hintIcon) {
       if (shouldDisable) {
         hintIcon.classList.add('hint-disabled');
-        console.log('Hint button is disabled');
       } else {
         hintIcon.classList.remove('hint-disabled');
       }
@@ -383,7 +381,6 @@ function showHint() {
 
   // Only show hint if we're at the latest explored position
   if (chessPuzzle.exploredMoves.length !== chessPuzzle.currentMoveIndex) {
-    console.log('Cannot show hint - not at latest explored position');
     return;
   }
 
@@ -393,7 +390,6 @@ function showHint() {
     const to = moveString.slice(2, 4);
     const orientation = chessPuzzle.board.orientation();
 
-    console.log(`Showing hint from ${from} to ${to} with orientation ${orientation}`);
     // Draw an arrow from source to target square
     drawArrow(from, to, '#3e8ef7', orientation); // Blue arrow for hints
   } else {
