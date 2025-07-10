@@ -90,12 +90,38 @@ export function createSettingsPanel(searchParams, fetchPuzzles) {
   minRatingSlider.addEventListener('input', () => {
     searchParams.min_rating = parseInt(minRatingSlider.value, 10);
     minRatingNumber.textContent = `${searchParams.min_rating}`;
+    
+    // Validate rating range and update search button state
+    validateRatingRange();
 });
 
 maxRatingSlider.addEventListener('input', () => {
   searchParams.max_rating = parseInt(maxRatingSlider.value, 10);
   maxRatingNumber.textContent = `${searchParams.max_rating}`;
+  
+  // Validate rating range and update search button state
+  validateRatingRange();
 });
+
+// Function to validate rating range and disable/enable search button
+function validateRatingRange() {
+  const minRating = parseInt(minRatingSlider.value, 10);
+  const maxRating = parseInt(maxRatingSlider.value, 10);
+  
+  // Disable search button if min rating is greater than max rating
+  const isInvalidRange = minRating > maxRating;
+  searchButton.disabled = isInvalidRange;
+  
+  // Optionally add visual feedback
+  if (isInvalidRange) {
+    searchButton.style.opacity = '0.5';
+    searchButton.title = 'Invalid rating range: Min rating cannot be greater than Max rating';
+  } else {
+    searchButton.style.opacity = '1';
+    searchButton.title = 'Normal Search';
+  }
+}
+
 
 // Add slider for min_popularity
 const popularityContainer = document.createElement('div');
@@ -308,11 +334,13 @@ export function createNavigationButtons(moveBackward, moveForward, triggersearch
     navigationContainer.style.gap = '10px';
 
     const backwardButton = document.createElement('button');
+    backwardButton.id = 'backward-button';
+    backwardButton.title = 'Go Backward';
     backwardButton.textContent = '<';
     backwardButton.style.padding = '10px';
+    backwardButton.disabled = true; // Initially disabled as we start at position 0
     backwardButton.addEventListener('click', () => {
         moveBackward();
-        // No need to call updateHintButtonState here since it will be called in moveBackward
     });
 
     const searchSimilarButton = document.createElement('button');
@@ -350,11 +378,13 @@ export function createNavigationButtons(moveBackward, moveForward, triggersearch
     hintButton.appendChild(hintIcon);
 
     const forwardButton = document.createElement('button');
+    forwardButton.id = 'forward-button';
+    forwardButton.title = 'Go Forward';
     forwardButton.textContent = '>';
     forwardButton.style.padding = '10px';
+    forwardButton.disabled = true; // Initially disabled as we start with no explored moves
     forwardButton.addEventListener('click', () => {
         moveForward();
-        // No need to call updateHintButtonState here since it will be called in moveForward
     });
 
     navigationContainer.appendChild(backwardButton);
@@ -363,12 +393,13 @@ export function createNavigationButtons(moveBackward, moveForward, triggersearch
     navigationContainer.appendChild(forwardButton);
     document.getElementById('board').parentNode.appendChild(navigationContainer);
     
-    // Store the hint button reference in the chessPuzzle instance
+    // Store the button references in the chessPuzzle instance
     if (window.chessPuzzle) {
         window.chessPuzzle.setHintButton(hintButton);
+        window.chessPuzzle.setNavigationButtons(backwardButton, forwardButton);
     }
     
-    return hintButton; // Return the hint button for reference
+    return { hintButton, backwardButton, forwardButton }; // Return buttons for reference
 }
 
 

@@ -59,6 +59,7 @@ class ChessPuzzle {
   initializeBoard() {
     this.board = Chessboard('board', config); // Initialize the chessboard
     this.updateHintButtonState(); // Update hint button state after initializing
+    this.updateNavigationButtonStates()
   }
 
 
@@ -81,6 +82,14 @@ class ChessPuzzle {
 
   }
 
+
+  updateNavigationButtonStates() {
+      const backwardButton = document.getElementById('backward-button');
+      const forwardButton = document.getElementById('forward-button');
+      backwardButton.disabled = this.currentMoveIndex === 0;
+      forwardButton.disabled = this.currentMoveIndex >= this.exploredMoves.length;
+  }
+
   reinitialize() {
     this.game = new Chess(this.initialFen);
     this.exploredMoves = [];
@@ -88,12 +97,14 @@ class ChessPuzzle {
     this.board.position(this.game.fen(), false);
     this.currentMoveIndex = 0;
     this.updateHintButtonState(); // Update hint button state
+    this.updateNavigationButtonStates(); // Update navigation button states
   }
 
   resetBoard() {
     resetBoardToExploredState(this.game, this.initialFen, this.exploredMoves);
     this.board.position(this.game.fen(), false);
     this.updateHintButtonState(); // Update hint button state
+    this.updateNavigationButtonStates(); // Update navigation button states
   }
   setMetadata({ mark }) {
     this.mark = mark;
@@ -112,6 +123,8 @@ class ChessPuzzle {
       mark: this.mark,
     };
   }
+
+  
 }
 
 
@@ -615,6 +628,7 @@ function moveForward() {
     highlightLastMove(from, to);
     chessPuzzle.currentMoveIndex++;
     chessPuzzle.updateHintButtonState(); // Update hint button state
+    chessPuzzle.updateNavigationButtonStates()
   }
 }
 
@@ -634,6 +648,7 @@ function moveBackward() {
       highlightLastMove(from, to);
     }
     chessPuzzle.updateHintButtonState(); // Update hint button state
+    chessPuzzle.updateNavigationButtonStates(); // Update navigation button states
   }
 }
 function resetHighlights() {
