@@ -36,6 +36,29 @@ let searchParams = {
 const FIRST_RANK = 1; // For black pawns
 const EIGTH_RANK = 8; // For white pawns
 
+const searchManager = {
+  isInProgress: false,
+  currentId: 0,
+  
+  startSearch() {
+    const isReplacing = this.isInProgress;
+    this.isInProgress = true;
+    this.currentId++;
+    return {
+      id: this.currentId,
+      isReplacing
+    };
+  },
+  
+  isStillCurrent(id) {
+    return id === this.currentId;
+  },
+  
+  endSearch() {
+    this.isInProgress = false;
+  }
+};
+
 
 
 class ChessPuzzle {
@@ -674,19 +697,33 @@ async function initializeSession() {
 // Function to fetch puzzles from the backend
 async function fetchPuzzles(searchParams) {
   try {
+    const search = searchManager.startSearch();
+    
     // Construct the query string from the searchParams object
     const queryString = new URLSearchParams(searchParams).toString();
-    const response = await fetch(`https://api.valentinklamka.de/api/puzzles?${queryString}`, {
+    const response = await fetch(`http://127.0.0.1:3000/api/puzzles?${queryString}`, {
       method: 'GET',
       credentials: 'include', // Include cookies in the request
     });
+    
+    // If another search has started since this one, ignore the results
+    if (!searchManager.isStillCurrent(search.id)) {
+      return; // Simply return without processing the results
+    }
+    
     isSearchingSimilar = false; // Set the flag to indicate normal search mode
+    searchManager.endSearch(); // Mark search as completed
 
     if (!response.ok) {
       throw new Error('Failed to fetch puzzles');
     }
 
     const rawPuzzles = await response.json();
+    
+    // Check again if this search is still current
+    if (!searchManager.isStillCurrent(search.id)) {
+      return;
+    }
 
     // Map the puzzles to ChessPuzzle instances
     puzzles = rawPuzzles.map((rawPuzzle) => new ChessPuzzle(mapPuzzleKeys(rawPuzzle)));
@@ -695,9 +732,11 @@ async function fetchPuzzles(searchParams) {
       loadPuzzle(0); // Load the first puzzle
       updatePuzzleIdText(); // Update the puzzle ID text
     } else {
+      // Only show "No puzzles found" if this was the most recent search
       alert('No puzzles found');
     }
   } catch (error) {
+    searchManager.endSearch();
     console.error('Error fetching puzzles:', error);
     alert('Error fetching puzzles');
   }
