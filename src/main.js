@@ -701,7 +701,7 @@ async function fetchPuzzles(searchParams) {
     
     // Construct the query string from the searchParams object
     const queryString = new URLSearchParams(searchParams).toString();
-    const response = await fetch(`http://127.0.0.1:3000/api/puzzles?${queryString}`, {
+    const response = await fetch(`https://api.valentinklamka.de/api/puzzles?${queryString}`, {
       method: 'GET',
       credentials: 'include', // Include cookies in the request
     });
