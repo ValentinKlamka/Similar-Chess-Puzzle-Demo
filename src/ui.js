@@ -325,7 +325,7 @@ export function createHelpPanel() {
   helpPanel.appendChild(footer);
   
   // Add content from markdown file
-  fetch('/docs/help.md')
+  fetch('/Similar-Chess-Puzzle-Demo/docs/help.md')
     .then(response => response.text())
     .then(markdownContent => {
       // Use marked.js to convert Markdown to HTML
