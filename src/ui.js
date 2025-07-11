@@ -267,6 +267,83 @@ minRatingNumber.addEventListener('input', () => {
   
 }
 
+export function createHelpPanel() {
+  // Create the help panel
+  console.log('Creating help panel');
+  const helpPanel = document.createElement('div');
+  helpPanel.id = 'help-panel';
+  
+  // Add styles for panel layout with flexbox
+  helpPanel.style.display = 'flex';
+  helpPanel.style.flexDirection = 'column';
+  helpPanel.style.maxHeight = '80vh'; // Maximum height
+  
+  // Create content container (scrollable)
+  const contentContainer = document.createElement('div');
+  contentContainer.style.flex = '1';
+  contentContainer.style.overflowY = 'auto';
+  contentContainer.style.paddingBottom = '10px';
+  contentContainer.innerHTML = '<p>Loading help content...</p>';
+  helpPanel.appendChild(contentContainer);
+  
+  // Create footer with sticky positioning
+  const footer = document.createElement('div');
+  footer.style.borderTop = '1px solid #444';
+  footer.style.padding = '10px 0';
+  footer.style.display = 'flex';
+  footer.style.justifyContent = 'center';
+  footer.style.position = 'sticky';
+  footer.style.bottom = '0';
+  footer.style.backgroundColor = '#262421'; // Match panel background
+  footer.style.width = '100%';
+  
+  // Create SVG close button (X in circle)
+  const closeButton = document.createElement('button');
+  closeButton.style.background = 'none';
+  closeButton.style.border = 'none';
+  closeButton.style.cursor = 'pointer';
+  closeButton.style.padding = '0';
+  closeButton.style.width = '32px';
+  closeButton.style.height = '32px';
+  closeButton.title = 'Close help';
+  
+  // SVG for X in circle
+  closeButton.innerHTML = `
+    <svg width="32" height="32" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="16" cy="16" r="14" fill="none" stroke="#888" stroke-width="2"/>
+      <line x1="10" y1="10" x2="22" y2="22" stroke="#888" stroke-width="2" stroke-linecap="round"/>
+      <line x1="22" y1="10" x2="10" y2="22" stroke="#888" stroke-width="2" stroke-linecap="round"/>
+    </svg>
+  `;
+  
+  // Event listener to close the panel
+  closeButton.addEventListener('click', () => {
+    helpPanel.style.visibility = 'hidden';
+  });
+  
+  footer.appendChild(closeButton);
+  helpPanel.appendChild(footer);
+  
+  // Add content from markdown file
+  fetch('/docs/help.md')
+    .then(response => response.text())
+    .then(markdownContent => {
+      // Use marked.js to convert Markdown to HTML
+      contentContainer.innerHTML = marked.parse(markdownContent);
+    })
+    .catch(error => {
+      console.error('Error loading help content:', error);
+      // Fallback content
+      contentContainer.innerHTML = `
+        <h3>Help</h3>
+      `;
+    });
+  
+  // Append to document body
+  document.body.appendChild(helpPanel);
+  
+  return helpPanel;
+}
 
 export function createSidebar() {
   const sidebar = document.createElement('div');
@@ -407,37 +484,68 @@ export function createNavigationButtons(moveBackward, moveForward, triggersearch
 //window.addEventListener('load', fixPanelWidthOnZoom);
 //window.addEventListener('resize', fixPanelWidthOnZoom);
 
-export function addSettingsPanelToggle() {
-  const toggleButton = document.createElement('button');
-  toggleButton.style.position = 'absolute';
-  toggleButton.style.top = '10px';
-  toggleButton.style.left = '10px';
-  toggleButton.style.zIndex = '1000';
-  toggleButton.style.background = 'none'; // Remove default button styling
-  toggleButton.style.border = 'none';
-  toggleButton.style.cursor = 'pointer';
+export function createSettingsAndHelpButtons() {
+  // Create settings button
+  const settingsButton = document.createElement('button');
+  settingsButton.style.position = 'absolute';
+  settingsButton.style.top = '10px';
+  settingsButton.style.left = '10px';
+  settingsButton.style.zIndex = '1000';
+  settingsButton.style.background = 'none';
+  settingsButton.style.border = 'none';
+  settingsButton.style.cursor = 'pointer';
 
   const settingsPanel = document.getElementById('settings-panel');
 
   // Add the SVG graphic to the button
-  const svgIcon = document.createElement('img');
-  svgIcon.src = 'assets/svg/settings-2-svgrepo-com.svg';
-  svgIcon.alt = 'Settings Icon';
-  svgIcon.style.width = '24px'; // Adjust size as needed
-  svgIcon.style.height = '24px';
+  const settingsIcon = document.createElement('img');
+  settingsIcon.src = 'assets/svg/settings-2-svgrepo-com.svg';
+  settingsIcon.alt = 'Settings Icon';
+  settingsIcon.style.width = '24px';
+  settingsIcon.style.height = '24px';
 
-  toggleButton.appendChild(svgIcon);
+  settingsButton.appendChild(settingsIcon);
 
-  toggleButton.addEventListener('click', () => {
+  settingsButton.addEventListener('click', () => {
     // Flip the visibility state of the settings panel
     if (settingsPanel.style.visibility === 'visible') {
-      settingsPanel.style.visibility = 'hidden'; // Hide the settings panel
+      settingsPanel.style.visibility = 'hidden';
     } else {
-      settingsPanel.style.visibility = 'visible'; // Show the settings panel
+      settingsPanel.style.visibility = 'visible';
     }
   });
 
-  document.body.appendChild(toggleButton);
+  document.body.appendChild(settingsButton);
+  
+  // Create help button below settings button
+  const helpButton = document.createElement('button');
+  helpButton.style.position = 'absolute';
+  helpButton.style.top = '44px'; // Position below settings button (10px + 24px + 10px padding)
+  helpButton.style.left = '10px'; // Same left position as settings button
+  helpButton.style.zIndex = '1000';
+  helpButton.style.background = 'none';
+  helpButton.style.border = 'none';
+  helpButton.style.cursor = 'pointer';
+
+  // Add the SVG graphic to the button
+  const helpIcon = document.createElement('img');
+  helpIcon.src = 'assets/svg/help-circle-outline-svgrepo-com.svg';
+  helpIcon.alt = 'Help Icon';
+  helpIcon.style.width = '24px';
+  helpIcon.style.height = '24px';
+
+  helpButton.appendChild(helpIcon);
+
+  helpButton.addEventListener('click', () => {
+    // Toggle visibility of the help panel
+    const helpPanel = document.getElementById('help-panel');
+    if (helpPanel.style.visibility === 'visible') {
+      helpPanel.style.visibility = 'hidden';
+    } else {
+      helpPanel.style.visibility = 'visible';
+    }
+  });
+  document.body.appendChild(helpButton);
 }
 
 // Function to draw an arrow between two squares

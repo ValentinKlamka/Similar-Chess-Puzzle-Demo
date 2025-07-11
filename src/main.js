@@ -1,4 +1,4 @@
-import { createSettingsPanel, createSidebar, createNavigationButtons, addSettingsPanelToggle, drawArrow } from './ui.js';
+import { createSettingsPanel,createHelpPanel, createSidebar, createNavigationButtons, createSettingsAndHelpButtons, drawArrow } from './ui.js';
 import { fetchEventSource } from 'https://cdn.skypack.dev/@microsoft/fetch-event-source';
 
 // NOTE: this example uses the chess.js library:
@@ -923,7 +923,8 @@ async function loadNextPuzzleFromHeap() {
 
 
 createSettingsPanel(searchParams, fetchPuzzles);
-addSettingsPanelToggle();
+createHelpPanel();
+createSettingsAndHelpButtons();
 createSidebar();
 
 createNavigationButtons(moveBackward, moveForward, triggerSearchSimilar, showHint);
