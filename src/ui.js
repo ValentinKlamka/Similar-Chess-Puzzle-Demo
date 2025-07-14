@@ -269,7 +269,6 @@ minRatingNumber.addEventListener('input', () => {
 
 export function createHelpPanel() {
   // Create the help panel
-  console.log('Creating help panel');
   const helpPanel = document.createElement('div');
   helpPanel.id = 'help-panel';
   

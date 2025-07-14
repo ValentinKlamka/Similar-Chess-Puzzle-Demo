@@ -7,14 +7,15 @@ window.triggerSearchSimilar = triggerSearchSimilar;
 let chessPuzzle = null;
 // Expose the function globally
 
-setInterval(() => {
-  fetch("https://api.valentinklamka.de/api/keepalive", {
-    method: "POST",
-    credentials: "include",
-    keepalive: true
-  });
-}, 10000);
 
+setInterval(() => {
+  if (tokenManager.isAuthenticated()) {
+    fetchWithAuth("https://api.valentinklamka.de/api/keepalive", {
+      method: 'POST',
+      credentials: 'omit' // No need for credentials with token auth
+    });
+  }
+}, 10000); // every 10s
 
 
 
@@ -679,16 +680,31 @@ function resetHighlights() {
   $('#board .square-55d63').removeClass('highlight-light highlight-dark');
 }
 
+
 async function initializeSession() {
   try {
+    const headers = {};
+    
+    // If we have a token, include it in the request
+    if (tokenManager.isAuthenticated()) {
+      headers['Authorization'] = `Bearer ${tokenManager.getToken()}`;
+    }
+    
+    // Request a session (either validate existing or get new)
     const response = await fetch('https://api.valentinklamka.de/api/assign_session_id', {
       method: 'GET',
-      credentials: 'include', // Ensure cookies are included
+      headers
     });
+    
     if (!response.ok) {
       throw new Error('Failed to initialize session');
     }
-    const message = await response.json();
+    
+    const data = await response.json();
+    
+    // Save the token (whether it's the same or a new one)
+    tokenManager.setToken(data.token);
+
   } catch (error) {
     console.error('Error initializing session:', error);
   }
@@ -701,9 +717,9 @@ async function fetchPuzzles(searchParams) {
     
     // Construct the query string from the searchParams object
     const queryString = new URLSearchParams(searchParams).toString();
-    const response = await fetch(`https://api.valentinklamka.de/api/puzzles?${queryString}`, {
+    const response = await fetchWithAuth(`https://api.valentinklamka.de/api/puzzles?${queryString}`, {
       method: 'GET',
-      credentials: 'include', // Include cookies in the request
+      credentials: 'omit', // No need for cookies
     });
     
     // If another search has started since this one, ignore the results
@@ -743,37 +759,45 @@ async function fetchPuzzles(searchParams) {
 }
 
 
-
 // Function to save a solved puzzle
 async function saveSolvedPuzzle(puzzle) {
   try {
-    await fetch('https://api.valentinklamka.de/api/solved_puzzles', {
+    const response = await fetchWithAuth('https://api.valentinklamka.de/api/solved_puzzles', {
       method: 'POST',
-      credentials: 'include',
-      headers: { 'Content-Type': 'application/json' },
+      credentials: 'omit', // No need for cookies with token auth
       body: JSON.stringify(puzzle),
     });
+    
+    if (!response.ok) {
+      throw new Error(`Failed to save puzzle: ${response.statusText}`);
+    }
+    
+    return response;
   } catch (error) {
     console.error('Error saving solved puzzle:', error);
+    // Optionally show a user-friendly message
+    // alert('Failed to save your progress. Please try again.');
   }
 }
 
 // Function to fetch solved puzzles
 async function fetchSolvedPuzzles() {
   try {
-    const response = await fetch('https://api.valentinklamka.de/api/solved_puzzles', {
+    const response = await fetchWithAuth('https://api.valentinklamka.de/api/solved_puzzles', {
       method: 'GET',
-      credentials: 'include',
+      credentials: 'omit', // No need for cookies with token auth
     });
 
     if (!response.ok) {
-      throw new Error('Failed to fetch solved puzzles');
+      throw new Error(`Failed to fetch solved puzzles: ${response.statusText}`);
     }
 
     const puzzles = await response.json();
     displaySolvedPuzzles(puzzles);
   } catch (error) {
     console.error('Error fetching solved puzzles:', error);
+    // You could show a user-friendly error message here
+    // Or silently fail since this is a secondary feature
   }
 }
 
@@ -850,12 +874,16 @@ async function triggerSearchSimilar() {
   const reference_puzzle = chessPuzzle.puzzle_id; // Store the reference puzzle ID in the instance
 
   try {
-    const referenceMoves = encodeURIComponent(chessPuzzle.moves_ton); // Ensure it's properly encoded
+    const token = tokenManager.getToken();
+    const referenceMoves = encodeURIComponent(chessPuzzle.moves_ton);
     const controller = new AbortController();
 
     fetchEventSource('https://api.valentinklamka.de/api/similar_puzzles?reference_moves=' + referenceMoves+"&reference_puzzle="+reference_puzzle, {
       method: 'GET',
-      credentials: 'include',
+      headers: {
+        'Authorization': `Bearer ${token}`
+      },
+      credentials: 'omit', // Don't send cookies
       signal: controller.signal,
       onmessage(event) {
 
@@ -880,8 +908,6 @@ async function triggerSearchSimilar() {
       }
     });
 
-
-
   } catch (error) {
     console.error('Error triggering search for similar puzzles:', error);
     alert('Error searching similar puzzles.');
@@ -889,36 +915,98 @@ async function triggerSearchSimilar() {
 }
 
 
-
 // Function to load the next puzzle from the heap
 async function loadNextPuzzleFromHeap() {
   try {
-    const response = await fetch(`https://api.valentinklamka.de/api/pop_max_puzzle`, {
+    const response = await fetchWithAuth(`https://api.valentinklamka.de/api/pop_max_puzzle`, {
       method: 'GET',
-      credentials: 'include',
+      credentials: 'omit', // No need for cookies with token auth
     });
 
     if (!response.ok) {
-      throw new Error('Failed to fetch the next puzzle from the heap.');
+      throw new Error(`Failed to fetch the next puzzle from the heap: ${response.statusText}`);
     }
-    const reference_puzzle = chessPuzzle.reference_puzzle; // Store the reference puzzle in the instance
-
-    const [score, raw_puzzle] = await response.json();
-    const puzzle = new ChessPuzzle(mapPuzzleKeys(raw_puzzle)); // Initialize as ChessPuzzle
-    if (puzzle) {
-      puzzles.push(puzzle); // Add the new puzzle to the puzzles array
-      currentPuzzleIndex = puzzles.length - 1; // Set the current puzzle index to the last puzzle
-      loadPuzzle(currentPuzzleIndex); // Load the puzzle into the board
-      chessPuzzle.score = score; // Store the score in the chessPuzzle instance
-      chessPuzzle.reference_puzzle = reference_puzzle; // Store the reference puzzle ID in the instance
-      updatePuzzleIdText(); // Update the puzzle ID text
-    } else {
+    
+    const data = await response.json();
+    if (!data) {
       alert('No more puzzles available in the heap.');
+      return;
     }
+    
+    const reference_puzzle = chessPuzzle.reference_puzzle; // Store the reference puzzle ID
+    const [score, raw_puzzle] = data;
+    
+    // Ensure we have a valid puzzle
+    if (!raw_puzzle) {
+      alert('No more puzzles available in the heap.');
+      return;
+    }
+    
+    const puzzle = new ChessPuzzle(mapPuzzleKeys(raw_puzzle)); // Initialize as ChessPuzzle
+    puzzles.push(puzzle); // Add the new puzzle to the puzzles array
+    currentPuzzleIndex = puzzles.length - 1; // Set the current puzzle index to the last puzzle
+    loadPuzzle(currentPuzzleIndex); // Load the puzzle into the board
+    chessPuzzle.score = score; // Store the score in the chessPuzzle instance
+    chessPuzzle.reference_puzzle = reference_puzzle; // Store the reference puzzle ID
+    updatePuzzleIdText(); // Update the puzzle ID text
   } catch (error) {
     console.error('Error fetching the next puzzle from the heap:', error);
-    alert('Error fetching the next puzzle from the heap.');
+    alert('Error fetching the next puzzle. Please try again later.');
   }
+}
+
+// Token management utilities
+const tokenManager = {
+  getToken() {
+    return localStorage.getItem('chess_puzzle_token');
+  },
+  
+  setToken(token) {
+    localStorage.setItem('chess_puzzle_token', token);
+  },
+  
+  clearToken() {
+    localStorage.removeItem('chess_puzzle_token');
+  },
+  
+  isAuthenticated() {
+    return !!this.getToken();
+  }
+};
+
+// API request helper with token
+async function fetchWithAuth(url, options = {}) {
+  const token = tokenManager.getToken();
+  
+  // Set default headers
+  const headers = {
+    'Content-Type': 'application/json',
+    ...options.headers
+  };
+  
+  // Add token if available
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`;
+  }
+  
+  // Merge options
+  const fetchOptions = {
+    ...options,
+    headers
+  };
+  
+  // Make the request
+  const response = await fetch(url, fetchOptions);
+  
+  // Handle 401 Unauthorized (token expired or invalid)
+  if (response.status === 401) {
+    tokenManager.clearToken();
+    // Optional: Redirect to login or reinitialize
+    await initializeSession();
+    return fetchWithAuth(url, options); // Retry with new token
+  }
+  
+  return response;
 }
 
 
