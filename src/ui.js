@@ -506,11 +506,17 @@ export function createSettingsAndHelpButtons() {
   settingsButton.appendChild(settingsIcon);
 
   settingsButton.addEventListener('click', () => {
+    const helpPanel = document.getElementById('help-panel');
+    
     // Flip the visibility state of the settings panel
     if (settingsPanel.style.visibility === 'visible') {
       settingsPanel.style.visibility = 'hidden';
     } else {
       settingsPanel.style.visibility = 'visible';
+      // Close help panel if it's open
+      if (helpPanel && helpPanel.style.visibility === 'visible') {
+        helpPanel.style.visibility = 'hidden';
+      }
     }
   });
 
@@ -536,12 +542,17 @@ export function createSettingsAndHelpButtons() {
   helpButton.appendChild(helpIcon);
 
   helpButton.addEventListener('click', () => {
-    // Toggle visibility of the help panel
     const helpPanel = document.getElementById('help-panel');
+    
+    // Toggle visibility of the help panel
     if (helpPanel.style.visibility === 'visible') {
       helpPanel.style.visibility = 'hidden';
     } else {
       helpPanel.style.visibility = 'visible';
+      // Close settings panel if it's open
+      if (settingsPanel && settingsPanel.style.visibility === 'visible') {
+        settingsPanel.style.visibility = 'hidden';
+      }
     }
   });
   document.body.appendChild(helpButton);

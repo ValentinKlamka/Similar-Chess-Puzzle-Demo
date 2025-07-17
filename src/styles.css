@@ -58,8 +58,8 @@ visibility: hidden; /* Initially hidden */
 }
 #help-panel{
 position: absolute;
-width: 300px;
-height: 300px;
+width: 400px;
+height: 400px;
 overflow-y: auto;
 border: 1px solid #ccc;
 padding: 10px;
