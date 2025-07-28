@@ -1,21 +1,19 @@
-import { createSettingsPanel,createHelpPanel, createSidebar, createNavigationButtons, createSettingsAndHelpButtons, drawArrow } from './ui.js';
+import { createSettingsPanel,createHelpPanel,createImportPanel, createSidebar, createNavigationButtons, createSettingsAndHelpButtons, drawArrow } from './ui.js';
 import { fetchEventSource } from 'https://cdn.skypack.dev/@microsoft/fetch-event-source';
-
 // NOTE: this example uses the chess.js library:
 // https://github.com/jhlywa/chess.js
-window.triggerSearchSimilar = triggerSearchSimilar;
 let chessPuzzle = null;
 // Expose the function globally
 
-
-setInterval(() => {
+let pingInterval = setInterval(() => {
   if (tokenManager.isAuthenticated()) {
-    fetchWithAuth("https://api.valentinklamka.de/api/keepalive", {
+    fetchWithAuth("/api/keepalive", {
       method: 'POST',
       credentials: 'omit' // No need for credentials with token auth
     });
   }
 }, 10000); // every 10s
+
 
 
 
@@ -61,7 +59,6 @@ const searchManager = {
 };
 
 
-
 class ChessPuzzle {
   constructor(puzzle) {
     this.puzzle_id = puzzle.puzzle_id;
@@ -78,6 +75,9 @@ class ChessPuzzle {
     this.reference_puzzle = puzzle.reference_puzzle || null;
     this.score = puzzle.score || null;
     this.mark = puzzle.mark || null;
+
+    // Add this new property to determine if puzzle starts with player move
+    this.startsWithPlayerMove = this.movesArray.length % 2 === 1; // Odd number of moves means player starts
   }
 
   initializeBoard() {
@@ -187,7 +187,8 @@ function executeComputerMove() {
     highlightLastMove(from, to); // Highlight the move
     chessPuzzle.board.position(chessPuzzle.game.fen(), false);
     chessPuzzle.currentMoveIndex++;
-    chessPuzzle.updateHintButtonState(); // Update the hint button state
+    chessPuzzle.updateHintButtonState(); // Add this line
+    chessPuzzle.updateNavigationButtonStates(); // Update navigation button states
   } else {
     // If all moves are completed, check if the puzzle is solved
     checkPuzzleSolved();
@@ -203,9 +204,13 @@ function onDrop(source, target) {
     return 'snapback';
   }
 
-  // Check if it's the user's turn
-  if (chessPuzzle.currentMoveIndex % 2 === 0) {
-    return 'snapback'; // Not the user's turn
+  // Modified check for user's turn that considers startsWithPlayerMove
+  if ((chessPuzzle.currentMoveIndex % 2 === 0) && !chessPuzzle.startsWithPlayerMove) {
+    return 'snapback'; // Not the user's turn for standard puzzles
+  }
+  
+  if ((chessPuzzle.currentMoveIndex % 2 === 1) && chessPuzzle.startsWithPlayerMove) {
+    return 'snapback'; // Not the user's turn for custom puzzles
   }
 
   const expectedMove = chessPuzzle.movesArray[chessPuzzle.currentMoveIndex];
@@ -281,7 +286,8 @@ function handleUserMove(move) {
     highlightLastMove(move.from, move.to); // Highlight the move
     correctMoveIndicator(move.to);
     chessPuzzle.currentMoveIndex++;
-    chessPuzzle.updateHintButtonState(); // Add this line
+    chessPuzzle.updateHintButtonState(); 
+    chessPuzzle.updateNavigationButtonStates()
 
     //small delay to allow the board to update
     setTimeout(() => {
@@ -367,7 +373,7 @@ function showPromotionMenu(target, callback) {
 
   // Add promotion options with piece images
   pieces.forEach((piece) => {
-    const $option = $(`<div><img src="/Similar-Chess-Puzzle-Demo/img/chesspieces/wikipedia/${color}${piece.toUpperCase()}.png" alt="${piece}" /></div>`);
+    const $option = $(`<div><img src="img/chesspieces/wikipedia/${color}${piece.toUpperCase()}.png" alt="${piece}" /></div>`);
     $option.css({
       display: 'flex',
       alignItems: 'center',
@@ -585,6 +591,7 @@ async function checkPuzzleSolved() {
   isPuzzleFromHistory = false;
 }
 
+
 function updatePuzzleIdText() {
   const puzzleIdElement = document.getElementById('puzzle-id');
   if (chessPuzzle && chessPuzzle.puzzle_id) {
@@ -617,16 +624,31 @@ function loadPuzzle(puzzleIdentifier) {
     console.error('Invalid puzzle identifier');
     return;
   }
-  chessPuzzle = puzzle; // Directly use the ChessPuzzle instance
+  chessPuzzle = puzzle; // Set the global chessPuzzle variable
+
   chessPuzzle.initializeBoard() // Initialize the board if not already done
   updatePuzzleIdText(); // Update the puzzle ID text
 
-  // Set the board orientation based on the FEN string
-  const orientation = puzzle.initialFen.split(' ')[1] === 'b' ? 'white' : 'black';
+  let orientation;
+  const fenColor = puzzle.initialFen.split(' ')[1];
+  
+  if (chessPuzzle.startsWithPlayerMove) {
+    // For custom puzzles where player starts, orient board so player's color is at bottom
+    orientation = fenColor === 'w' ? 'white' : 'black';
+  } else {
+    // For standard puzzles, player plays as opposite of FEN color
+    orientation = fenColor === 'b' ? 'white' : 'black';
+  }
+  
   chessPuzzle.board.orientation(orientation);
 
   chessPuzzle.resetBoard(); // Reset the board to the initial state
-  executeComputerMove(); // Execute the first move by the computer
+
+  // Only execute computer's first move if puzzle doesn't start with player move
+  if (!chessPuzzle.startsWithPlayerMove) {
+    executeComputerMove(); // Execute the first move by the computer
+  }
+  // If startsWithPlayerMove is true, wait for the player's input
 }
 
 function resetBoardToExploredState(game, initialFen, moves) {
@@ -675,6 +697,7 @@ function moveBackward() {
     chessPuzzle.updateNavigationButtonStates(); // Update navigation button states
   }
 }
+
 function resetHighlights() {
   // Remove all highlights from the board
   $('#board .square-55d63').removeClass('highlight-light highlight-dark');
@@ -1013,6 +1036,7 @@ async function fetchWithAuth(url, options = {}) {
 createSettingsPanel(searchParams, fetchPuzzles);
 createHelpPanel();
 createSettingsAndHelpButtons();
+createImportPanel(saveSolvedPuzzle, fetchSolvedPuzzles);
 createSidebar();
 
 createNavigationButtons(moveBackward, moveForward, triggerSearchSimilar, showHint);
@@ -1070,3 +1094,66 @@ chessPuzzle = new ChessPuzzle({
   mark: null
 });
 chessPuzzle.initializeBoard();
+
+// Make the chess puzzle instance global
+window.chessPuzzle = chessPuzzle;
+
+// Update the search function with better debugging
+window.triggerSearchSimilarWithMoves = function(tonMoves) {
+  console.log("MAIN.JS: Function called with moves:", tonMoves);
+  
+  if (!tonMoves) {
+    console.error("No TON moves provided");
+    alert("Error: No moves provided for search");
+    return;
+  }
+  
+  // Add a reference puzzle ID for custom positions
+  const reference_puzzle = "custom_puzzle";
+  
+  try {
+    const token = tokenManager.getToken();
+    const encodedMoves = encodeURIComponent(tonMoves);
+    const controller = new AbortController();
+    
+    console.log(`MAIN.JS: Searching with moves: ${encodedMoves} and reference: ${reference_puzzle}`);
+    
+    // Include both reference_moves and reference_puzzle in the API request
+    fetchEventSource(`https://api.valentinklamka.de/api/similar_puzzles?reference_moves=${encodedMoves}&reference_puzzle=${reference_puzzle}`, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${token}`
+      },
+      credentials: 'omit',
+      signal: controller.signal,
+      onmessage(event) {
+        console.log("MAIN.JS: Received event:", event.data);
+        const [score, raw_puzzle] = JSON.parse(event.data);
+        const puzzle = new ChessPuzzle(mapPuzzleKeys(raw_puzzle));
+        puzzles.length = 0;
+        puzzles.push(puzzle);
+        currentPuzzleIndex = 0;
+        isSearchingSimilar = true;
+        
+        if (puzzles.length > 0) {
+          loadPuzzle(0);
+          chessPuzzle.score = score;
+          chessPuzzle.reference_puzzle = reference_puzzle;
+          updatePuzzleIdText();
+        } else {
+          alert('No puzzles found');
+        }
+        
+        controller.abort();
+      },
+      onerror(err) {
+        console.error("MAIN.JS: Error from event source:", err);
+        alert("Error communicating with the server");
+        controller.abort();
+      }
+    });
+  } catch (error) {
+    console.error('MAIN.JS: Error in search:', error);
+    alert('Error searching similar puzzles: ' + error.message);
+  }
+};
