@@ -7,7 +7,7 @@ let chessPuzzle = null;
 
 let pingInterval = setInterval(() => {
   if (tokenManager.isAuthenticated()) {
-    fetchWithAuth("/api/keepalive", {
+    fetchWithAuth("https://api.valentinklamka.de/api/keepalive", {
       method: 'POST',
       credentials: 'omit' // No need for credentials with token auth
     });
