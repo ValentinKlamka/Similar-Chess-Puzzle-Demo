@@ -233,9 +233,6 @@ cancelButton.style.borderRadius = '5px';
 cancelButton.style.padding = '8px';
 cancelButton.style.flex = '1';
 cancelButton.style.border = 'none';
-cancelButton.addEventListener('click', () => {
-  settingsPanel.style.visibility = 'hidden';
-});
 buttonContainer.appendChild(cancelButton);
 
 // Append the button container to the settings panel
@@ -901,7 +898,6 @@ export function createImportPanel(saveSolvedPuzzle, fetchSolvedPuzzles) {
       const reader = new FileReader();
       reader.onload = (e) => {
         // Skip showing preview, go straight to analysis
-        console.log('File uploaded:', file.name);
         analyzeChessImage(e.target.result).catch(e => {
           console.error('Error analyzing uploaded image:', e);
           const errorMsg = document.createElement('div');
@@ -972,15 +968,6 @@ export function createImportPanel(saveSolvedPuzzle, fetchSolvedPuzzles) {
   buttonText.textContent = 'Search Similar';
   okButton.appendChild(buttonText);
 
-  okButton.addEventListener('click', () => {
-    // Here you would add code to handle the import
-    console.log('Import: FEN:', fenInput.value);
-    console.log('Import: URL:', imageUrlInput.value);
-    console.log('Import: File:', imageUploadInput.files[0]?.name || 'None');
-
-    importPanel.style.visibility = 'hidden';
-  });
-
   // Cancel button
   const cancelButton = document.createElement('button');
   cancelButton.textContent = 'Cancel';
@@ -1027,7 +1014,6 @@ export function createImportPanel(saveSolvedPuzzle, fetchSolvedPuzzles) {
         predict_turn: true
       };
 
-      console.log('Sending request to ChessVision.ai...');
 
       // Send to ChessVision.ai (using HTTPS)
       const response = await fetch('https://app.chessvision.ai/predict', {
@@ -1038,25 +1024,21 @@ export function createImportPanel(saveSolvedPuzzle, fetchSolvedPuzzles) {
         body: JSON.stringify(payload)
       });
 
-      console.log('Response status:', response.status, response.statusText);
 
       if (!response.ok) {
         throw new Error(`ChessVision API error: ${response.status} ${response.statusText}`);
       }
 
       const result = await response.json();
-      console.log('ChessVision response:', result);
 
       // Check for FEN in the correct location of the response structure
       // The API returns the FEN in result.result, not result.fen
       if (result && result.result) {
         // Get the FEN string from the response
         let fenString = result.result;
-        console.log('FEN from ChessVision:', fenString);
 
         // Fix the FEN format - replace underscores with spaces
         const fixedFenString = fenString.replace(/_/g, ' ');
-        console.log('Fixed FEN:', fixedFenString);
 
         // Update the FEN input
         fenInput.value = fixedFenString;
@@ -1117,45 +1099,7 @@ export function createImportPanel(saveSolvedPuzzle, fetchSolvedPuzzles) {
     });
   }
 
-  // Update the okButton click handler to handle CORS issues
-  okButton.addEventListener('click', async () => {
-    const url = imageUrlInput.value.trim();
 
-    if (url) {
-      try {
-        previewContainer.innerHTML = '<div class="loading-spinner">Attempting to analyze image...</div>';
-
-        // Use a CORS proxy to fetch the image
-        const corsProxyUrl = 'https://corsproxy.io/?';
-        const proxyUrl = corsProxyUrl + encodeURIComponent(url);
-
-        const response = await fetch(proxyUrl);
-        if (!response.ok) {
-          throw new Error(`Failed to fetch image (status: ${response.status})`);
-        }
-
-        const blob = await response.blob();
-        const imageData = await blobToBase64(blob);
-
-        // Now analyze the image data
-        await analyzeChessImage(imageData);
-
-      } catch (e) {
-        console.error('Error fetching image with proxy:', e);
-        previewContainer.innerHTML = '';
-        const errorMsg = document.createElement('div');
-        errorMsg.textContent = 'Error fetching image: ' + e.message;
-        errorMsg.className = 'fen-note';
-        previewContainer.appendChild(errorMsg);
-      }
-    } else if (fenInput.value.trim()) {
-      // Handle FEN input
-      importPanel.style.visibility = 'hidden';
-    } else {
-      // No inputs provided
-      alert('Please provide a FEN string, image URL, or upload an image file.');
-    }
-  });
 
   // Helper function to convert a blob to base64
   function blobToBase64(blob) {
@@ -1178,7 +1122,6 @@ export function createImportPanel(saveSolvedPuzzle, fetchSolvedPuzzles) {
       }
 
       const result = await response.json();
-      console.log('Stockfish analysis result:', result);
       return result;
     } catch (e) {
       console.error('Error fetching Stockfish analysis:', e);
@@ -1571,7 +1514,6 @@ export function createImportPanel(saveSolvedPuzzle, fetchSolvedPuzzles) {
 
 
   function tonCombination(fen, moves) {
-    console.log("Converting moves to TON format:", fen, moves);
 
     // Create a chess instance with the current position
     const chess = new Chess(fen);
@@ -1636,7 +1578,6 @@ export function createImportPanel(saveSolvedPuzzle, fetchSolvedPuzzles) {
     }
 
     const result = tonMoves.join(' ');
-    console.log("Generated TON moves:", result);
     return result;
   }
 
@@ -1646,6 +1587,8 @@ export function createImportPanel(saveSolvedPuzzle, fetchSolvedPuzzles) {
 
     if (fen) {
       try {
+        // Hide the import panel
+        importPanel.style.visibility = 'hidden';
         // Get the active moves from the analysis
         const analysisContainer = document.getElementById('stockfish-analysis');
         if (analysisContainer) {
@@ -1653,7 +1596,6 @@ export function createImportPanel(saveSolvedPuzzle, fetchSolvedPuzzles) {
           if (activeSpan) {
             // Extract the active moves
             const activeMoveText = activeSpan.textContent.trim();
-            console.log("Active moves text:", activeMoveText);
 
             // Extract SAN moves using regex to remove move numbers
             const sanMoves = [];
@@ -1662,8 +1604,6 @@ export function createImportPanel(saveSolvedPuzzle, fetchSolvedPuzzles) {
             while ((match = moveRegex.exec(activeMoveText)) !== null) {
               sanMoves.push(match[1]);
             }
-
-            console.log("Extracted SAN moves:", sanMoves);
 
             if (sanMoves.length > 0) {
               // Generate a custom puzzle ID with timestamp with HHMMSS format
@@ -1720,10 +1660,8 @@ export function createImportPanel(saveSolvedPuzzle, fetchSolvedPuzzles) {
               loadingElement.style.color = 'white';
               document.body.appendChild(loadingElement);
 
-              console.log("Before calling window.triggerSearchSimilarWithMoves");
               // Call the search function directly
               window.triggerSearchSimilarWithMoves(tonMoves);
-              console.log("After calling window.triggerSearchSimilarWithMoves");
 
               // Update the solved puzzles display
               fetchSolvedPuzzles();
