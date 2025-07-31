@@ -1,4 +1,5 @@
-import { createSettingsPanel, createHelpPanel, createImportPanel, createSidebar, createNavigationButtons, createSettingsAndHelpButtons, drawArrow } from './ui.js';
+import { createSettingsPanel, createHelpPanel, createSidebar, createNavigationButtons, createSettingsAndHelpButtons, drawArrow } from './ui.js';
+import {createImportPanel} from './import_panel.js';
 import { fetchEventSource } from 'https://cdn.skypack.dev/@microsoft/fetch-event-source';
 // NOTE: this example uses the chess.js library:
 // https://github.com/jhlywa/chess.js
