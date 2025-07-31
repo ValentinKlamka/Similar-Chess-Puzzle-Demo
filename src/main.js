@@ -1,4 +1,4 @@
-import { createSettingsPanel,createHelpPanel,createImportPanel, createSidebar, createNavigationButtons, createSettingsAndHelpButtons, drawArrow } from './ui.js';
+import { createSettingsPanel, createHelpPanel, createImportPanel, createSidebar, createNavigationButtons, createSettingsAndHelpButtons, drawArrow } from './ui.js';
 import { fetchEventSource } from 'https://cdn.skypack.dev/@microsoft/fetch-event-source';
 // NOTE: this example uses the chess.js library:
 // https://github.com/jhlywa/chess.js
@@ -38,7 +38,7 @@ const EIGTH_RANK = 8; // For white pawns
 const searchManager = {
   isInProgress: false,
   currentId: 0,
-  
+
   startSearch() {
     const isReplacing = this.isInProgress;
     this.isInProgress = true;
@@ -48,11 +48,11 @@ const searchManager = {
       isReplacing
     };
   },
-  
+
   isStillCurrent(id) {
     return id === this.currentId;
   },
-  
+
   endSearch() {
     this.isInProgress = false;
   }
@@ -108,10 +108,10 @@ class ChessPuzzle {
 
 
   updateNavigationButtonStates() {
-      const backwardButton = document.getElementById('backward-button');
-      const forwardButton = document.getElementById('forward-button');
-      backwardButton.disabled = this.currentMoveIndex === 0;
-      forwardButton.disabled = this.currentMoveIndex >= this.exploredMoves.length;
+    const backwardButton = document.getElementById('backward-button');
+    const forwardButton = document.getElementById('forward-button');
+    backwardButton.disabled = this.currentMoveIndex === 0;
+    forwardButton.disabled = this.currentMoveIndex >= this.exploredMoves.length;
   }
 
   reinitialize() {
@@ -148,7 +148,7 @@ class ChessPuzzle {
     };
   }
 
-  
+
 }
 
 
@@ -208,7 +208,7 @@ function onDrop(source, target) {
   if ((chessPuzzle.currentMoveIndex % 2 === 0) && !chessPuzzle.startsWithPlayerMove) {
     return 'snapback'; // Not the user's turn for standard puzzles
   }
-  
+
   if ((chessPuzzle.currentMoveIndex % 2 === 1) && chessPuzzle.startsWithPlayerMove) {
     return 'snapback'; // Not the user's turn for custom puzzles
   }
@@ -286,7 +286,7 @@ function handleUserMove(move) {
     highlightLastMove(move.from, move.to); // Highlight the move
     correctMoveIndicator(move.to);
     chessPuzzle.currentMoveIndex++;
-    chessPuzzle.updateHintButtonState(); 
+    chessPuzzle.updateHintButtonState();
     chessPuzzle.updateNavigationButtonStates()
 
     //small delay to allow the board to update
@@ -581,7 +581,7 @@ async function checkPuzzleSolved() {
 
     });
   } else { // If the puzzle is from history
-    
+
     puzzles[currentPuzzleIndex].reinitialize();
     loadPuzzle(currentPuzzleIndex); // Reload the current puzzle
 
@@ -631,7 +631,7 @@ function loadPuzzle(puzzleIdentifier) {
 
   let orientation;
   const fenColor = puzzle.initialFen.split(' ')[1];
-  
+
   if (chessPuzzle.startsWithPlayerMove) {
     // For custom puzzles where player starts, orient board so player's color is at bottom
     orientation = fenColor === 'w' ? 'white' : 'black';
@@ -639,7 +639,7 @@ function loadPuzzle(puzzleIdentifier) {
     // For standard puzzles, player plays as opposite of FEN color
     orientation = fenColor === 'b' ? 'white' : 'black';
   }
-  
+
   chessPuzzle.board.orientation(orientation);
 
   chessPuzzle.resetBoard(); // Reset the board to the initial state
@@ -707,24 +707,24 @@ function resetHighlights() {
 async function initializeSession() {
   try {
     const headers = {};
-    
+
     // If we have a token, include it in the request
     if (tokenManager.isAuthenticated()) {
       headers['Authorization'] = `Bearer ${tokenManager.getToken()}`;
     }
-    
+
     // Request a session (either validate existing or get new)
     const response = await fetch('https://api.valentinklamka.de/api/assign_session_id', {
       method: 'GET',
       headers
     });
-    
+
     if (!response.ok) {
       throw new Error('Failed to initialize session');
     }
-    
+
     const data = await response.json();
-    
+
     // Save the token (whether it's the same or a new one)
     tokenManager.setToken(data.token);
 
@@ -737,19 +737,19 @@ async function initializeSession() {
 async function fetchPuzzles(searchParams) {
   try {
     const search = searchManager.startSearch();
-    
+
     // Construct the query string from the searchParams object
     const queryString = new URLSearchParams(searchParams).toString();
     const response = await fetchWithAuth(`https://api.valentinklamka.de/api/puzzles?${queryString}`, {
       method: 'GET',
       credentials: 'omit', // No need for cookies
     });
-    
+
     // If another search has started since this one, ignore the results
     if (!searchManager.isStillCurrent(search.id)) {
       return; // Simply return without processing the results
     }
-    
+
     isSearchingSimilar = false; // Set the flag to indicate normal search mode
     searchManager.endSearch(); // Mark search as completed
 
@@ -758,7 +758,7 @@ async function fetchPuzzles(searchParams) {
     }
 
     const rawPuzzles = await response.json();
-    
+
     // Check again if this search is still current
     if (!searchManager.isStillCurrent(search.id)) {
       return;
@@ -790,11 +790,11 @@ async function saveSolvedPuzzle(puzzle) {
       credentials: 'omit', // No need for cookies with token auth
       body: JSON.stringify(puzzle),
     });
-    
+
     if (!response.ok) {
       throw new Error(`Failed to save puzzle: ${response.statusText}`);
     }
-    
+
     return response;
   } catch (error) {
     console.error('Error saving solved puzzle:', error);
@@ -901,7 +901,7 @@ async function triggerSearchSimilar() {
     const referenceMoves = encodeURIComponent(chessPuzzle.moves_ton);
     const controller = new AbortController();
 
-    fetchEventSource('https://api.valentinklamka.de/api/similar_puzzles?reference_moves=' + referenceMoves+"&reference_puzzle="+reference_puzzle, {
+    fetchEventSource('https://api.valentinklamka.de/api/similar_puzzles?reference_moves=' + referenceMoves + "&reference_puzzle=" + reference_puzzle, {
       method: 'GET',
       headers: {
         'Authorization': `Bearer ${token}`
@@ -949,22 +949,22 @@ async function loadNextPuzzleFromHeap() {
     if (!response.ok) {
       throw new Error(`Failed to fetch the next puzzle from the heap: ${response.statusText}`);
     }
-    
+
     const data = await response.json();
     if (!data) {
       alert('No more puzzles available in the heap.');
       return;
     }
-    
+
     const reference_puzzle = chessPuzzle.reference_puzzle; // Store the reference puzzle ID
     const [score, raw_puzzle] = data;
-    
+
     // Ensure we have a valid puzzle
     if (!raw_puzzle) {
       alert('No more puzzles available in the heap.');
       return;
     }
-    
+
     const puzzle = new ChessPuzzle(mapPuzzleKeys(raw_puzzle)); // Initialize as ChessPuzzle
     puzzles.push(puzzle); // Add the new puzzle to the puzzles array
     currentPuzzleIndex = puzzles.length - 1; // Set the current puzzle index to the last puzzle
@@ -983,15 +983,15 @@ const tokenManager = {
   getToken() {
     return localStorage.getItem('chess_puzzle_token');
   },
-  
+
   setToken(token) {
     localStorage.setItem('chess_puzzle_token', token);
   },
-  
+
   clearToken() {
     localStorage.removeItem('chess_puzzle_token');
   },
-  
+
   isAuthenticated() {
     return !!this.getToken();
   }
@@ -1000,27 +1000,27 @@ const tokenManager = {
 // API request helper with token
 async function fetchWithAuth(url, options = {}) {
   const token = tokenManager.getToken();
-  
+
   // Set default headers
   const headers = {
     'Content-Type': 'application/json',
     ...options.headers
   };
-  
+
   // Add token if available
   if (token) {
     headers['Authorization'] = `Bearer ${token}`;
   }
-  
+
   // Merge options
   const fetchOptions = {
     ...options,
     headers
   };
-  
+
   // Make the request
   const response = await fetch(url, fetchOptions);
-  
+
   // Handle 401 Unauthorized (token expired or invalid)
   if (response.status === 401) {
     tokenManager.clearToken();
@@ -1028,7 +1028,7 @@ async function fetchWithAuth(url, options = {}) {
     await initializeSession();
     return fetchWithAuth(url, options); // Retry with new token
   }
-  
+
   return response;
 }
 
@@ -1099,25 +1099,26 @@ chessPuzzle.initializeBoard();
 window.chessPuzzle = chessPuzzle;
 
 // Update the search function with better debugging
-window.triggerSearchSimilarWithMoves = function(tonMoves) {
+window.triggerSearchSimilarWithMoves = function(tonMoves, puzzleId = "custom_puzzle"){
   console.log("MAIN.JS: Function called with moves:", tonMoves);
-  
+
   if (!tonMoves) {
     console.error("No TON moves provided");
     alert("Error: No moves provided for search");
     return;
   }
-  
-  // Add a reference puzzle ID for custom positions
-  const reference_puzzle = "custom_puzzle";
-  
+
+
+  // Use the provided puzzle ID instead of hardcoded value
+  const reference_puzzle = puzzleId;
+
   try {
     const token = tokenManager.getToken();
     const encodedMoves = encodeURIComponent(tonMoves);
     const controller = new AbortController();
-    
+
     console.log(`MAIN.JS: Searching with moves: ${encodedMoves} and reference: ${reference_puzzle}`);
-    
+
     // Include both reference_moves and reference_puzzle in the API request
     fetchEventSource(`https://api.valentinklamka.de/api/similar_puzzles?reference_moves=${encodedMoves}&reference_puzzle=${reference_puzzle}`, {
       method: 'GET',
@@ -1134,7 +1135,7 @@ window.triggerSearchSimilarWithMoves = function(tonMoves) {
         puzzles.push(puzzle);
         currentPuzzleIndex = 0;
         isSearchingSimilar = true;
-        
+
         if (puzzles.length > 0) {
           loadPuzzle(0);
           chessPuzzle.score = score;
@@ -1143,7 +1144,7 @@ window.triggerSearchSimilarWithMoves = function(tonMoves) {
         } else {
           alert('No puzzles found');
         }
-        
+
         controller.abort();
       },
       onerror(err) {
