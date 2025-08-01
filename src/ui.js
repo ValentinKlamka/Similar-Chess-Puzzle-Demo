@@ -233,6 +233,9 @@ cancelButton.style.borderRadius = '5px';
 cancelButton.style.padding = '8px';
 cancelButton.style.flex = '1';
 cancelButton.style.border = 'none';
+cancelButton.addEventListener('click', () => {
+  settingsPanel.style.visibility = 'hidden';
+});
 buttonContainer.appendChild(cancelButton);
 
 // Append the button container to the settings panel
