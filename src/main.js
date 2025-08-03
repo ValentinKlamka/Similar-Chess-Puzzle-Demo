@@ -595,15 +595,30 @@ async function checkPuzzleSolved() {
 
 function updatePuzzleIdText() {
   const puzzleIdElement = document.getElementById('puzzle-id');
+  
   if (chessPuzzle && chessPuzzle.puzzle_id) {
+    // Function to create a lichess hyperlink if the ID seems valid
+    const createPuzzleLink = (puzzleId) => {
+      // Check if this looks like a valid lichess puzzle ID (not starting with "c_" and only alphanumeric)
+      if (puzzleId && !String(puzzleId).startsWith('c_') && /^[a-zA-Z0-9]+$/.test(String(puzzleId))) {
+        return `<a href="https://lichess.org/training/${puzzleId}" target="_blank">${puzzleId}</a>`;
+      }
+      return puzzleId; // Return plain text for custom puzzle IDs
+    };
+    
     if (chessPuzzle.reference_puzzle !== null && chessPuzzle.score !== null) {
-
-      puzzleIdElement.textContent = `Puzzle ${chessPuzzle.puzzle_id} ${chessPuzzle.score.toFixed(2)} similarity to puzzle ${chessPuzzle.reference_puzzle}`;
+      // For puzzles with a reference and similarity score
+      const puzzleLink = createPuzzleLink(chessPuzzle.puzzle_id);
+      const referenceLink = createPuzzleLink(chessPuzzle.reference_puzzle);
+      
+      puzzleIdElement.innerHTML = `Puzzle ${puzzleLink} ${chessPuzzle.score.toFixed(2)} similarity to puzzle ${referenceLink}`;
     } else {
-      puzzleIdElement.textContent = `Puzzle ${chessPuzzle.puzzle_id}`;
+      // For regular puzzles without a reference
+      const puzzleLink = createPuzzleLink(chessPuzzle.puzzle_id);
+      puzzleIdElement.innerHTML = `Puzzle ${puzzleLink}`;
     }
   } else {
-    puzzleIdElement.textContent = ''; // Clear the text if no puzzle is given
+    puzzleIdElement.innerHTML = ''; // Clear the text if no puzzle is given
   }
 }
 // Function to load a puzzle into the board
@@ -1100,7 +1115,7 @@ chessPuzzle.initializeBoard();
 window.chessPuzzle = chessPuzzle;
 
 // Update the search function with better debugging
-window.triggerSearchSimilarWithMoves = function(tonMoves, puzzleId = "custom_puzzle"){
+window.triggerSearchSimilarWithMoves = function(tonMoves, puzzleId = "c_puzzle"){
   console.log("MAIN.JS: Function called with moves:", tonMoves);
 
   if (!tonMoves) {
