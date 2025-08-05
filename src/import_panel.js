@@ -27,18 +27,10 @@ export function createImportPanel(saveSolvedPuzzle, fetchSolvedPuzzles) {
   imageUrlInput.type = 'text';
   imageUrlInput.id = 'image-url-input';
   imageUrlInput.placeholder = 'https://example.com/chess-position.jpg';
-  
-  // Add click handler to auto-select all text or deselect on second click
-  imageUrlInput.addEventListener('click', function() {
-    if (document.activeElement === this && 
-        this.selectionStart === 0 && 
-        this.selectionEnd === this.value.length) {
-      // Already selected, so deselect by moving cursor to end
-      this.setSelectionRange(this.value.length, this.value.length);
-    } else {
-      // Select all text
-      this.select();
-    }
+
+  // Add click handler to auto-select all text
+  imageUrlInput.addEventListener('focus', function() {
+    this.select();
   });
 
   imageUrlSection.appendChild(imageUrlLabel);
@@ -63,18 +55,10 @@ export function createImportPanel(saveSolvedPuzzle, fetchSolvedPuzzles) {
   fenInput.type = 'text';
   fenInput.id = 'fen-input';
   fenInput.placeholder = 'e.g. rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
-  
-  // Add click handler to auto-select all text or deselect on second click
-  fenInput.addEventListener('click', function() {
-    if (document.activeElement === this && 
-        this.selectionStart === 0 && 
-        this.selectionEnd === this.value.length) {
-      // Already selected, so deselect by moving cursor to end
-      this.setSelectionRange(this.value.length, this.value.length);
-    } else {
-      // Select all text
-      this.select();
-    }
+
+  // Add click handler to auto-select all text
+  fenInput.addEventListener('focus', function() {
+    this.select();
   });
 
   fenSection.appendChild(fenLabel);
